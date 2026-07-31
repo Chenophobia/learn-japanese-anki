@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { verifyPassword } from '$lib/server/auth/password';
 import { createSession, SESSION_COOKIE, sessionMaxAge } from '$lib/server/auth/session';
+import { safeNextPath } from '$lib/server/auth/safe-redirect';
 import type { Actions } from './$types';
 
 export const actions: Actions = {
@@ -28,7 +29,6 @@ export const actions: Actions = {
       maxAge: sessionMaxAge(remember)
     });
 
-    const next = url.searchParams.get('next');
-    throw redirect(303, next && next.startsWith('/') ? next : '/');
+    throw redirect(303, safeNextPath(url.searchParams.get('next')));
   }
 };

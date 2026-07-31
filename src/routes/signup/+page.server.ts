@@ -1,11 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
 import { hashPassword } from '$lib/server/auth/password';
 import { validateCredentials } from '$lib/server/auth/credentials';
+import { usernameTaken, insertUser } from '$lib/server/auth/users';
 import { createSession, SESSION_COOKIE, sessionMaxAge } from '$lib/server/auth/session';
 import type { Actions } from './$types';
+
+const USERNAME_TAKEN_ERROR = 'That username is already taken.';
 
 export const actions: Actions = {
   default: async ({ request, cookies }) => {
@@ -17,14 +18,18 @@ export const actions: Actions = {
     const problem = validateCredentials(username, password);
     if (problem) return fail(400, { username, error: problem });
 
-    const [taken] = db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1).all();
-    if (taken) return fail(400, { username, error: 'That username is already taken.' });
+    // Common-path check: gives a clean message before doing any hashing work.
+    if (usernameTaken(db, username)) {
+      return fail(400, { username, error: USERNAME_TAKEN_ERROR });
+    }
 
-    const [user] = db
-      .insert(users)
-      .values({ username, passwordHash: await hashPassword(password), createdAt: new Date().toISOString() })
-      .returning()
-      .all();
+    // insertUser tolerates the rare race where two signups for the same
+    // username both pass the check above before either inserts — it returns
+    // null instead of throwing a raw SQLite UNIQUE constraint error.
+    const user = insertUser(db, username, await hashPassword(password), new Date().toISOString());
+    if (!user) {
+      return fail(400, { username, error: USERNAME_TAKEN_ERROR });
+    }
 
     const session = await createSession(db, user.id, remember);
     cookies.set(SESSION_COOKIE, session.id, {
