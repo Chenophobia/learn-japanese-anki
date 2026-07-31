@@ -50,6 +50,13 @@
     return date.toISOString().slice(0, 10);
   }
 
+  // Pure string formatting (no Date re-parsing, which would risk a
+  // local-timezone shift) for the screen-reader-only day list below.
+  function formatDay(dateStr: string): string {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return `${MONTH_NAMES[m - 1]} ${d}, ${y}`;
+  }
+
   // The most recent Saturday on/after today (UTC) — the grid always ends on
   // a complete week that contains today.
   function endOfGrid(): Date {
@@ -100,14 +107,28 @@
 </script>
 
 <div>
-  <div
-    bind:this={scrollEl}
-    class="overflow-x-auto pb-1"
-    role="img"
-    aria-label="Review activity heatmap: {totalReviews} {totalReviews === 1
-      ? 'review'
-      : 'reviews'} across {activeDays} active {activeDays === 1 ? 'day' : 'days'} in the last year"
-  >
+  <!--
+    Accessible alternative to the visual grid below. The grid itself is
+    marked aria-hidden and its per-cell data lives only in `title`
+    attributes, which never reach assistive tech inside a hidden subtree —
+    so screen-reader/keyboard users get this instead: a real total, plus
+    one line per ACTIVE day (never 365 rows of "0 reviews" noise, since
+    `days` already only contains non-zero counts).
+  -->
+  <p class="sr-only">
+    Review activity heatmap: {totalReviews}
+    {totalReviews === 1 ? 'review' : 'reviews'} across {activeDays} active {activeDays === 1 ? 'day' : 'days'} in the
+    last year.
+  </p>
+  {#if days.length > 0}
+    <ul class="sr-only">
+      {#each days as d (d.date)}
+        <li>{formatDay(d.date)}: {d.count} {d.count === 1 ? 'review' : 'reviews'}</li>
+      {/each}
+    </ul>
+  {/if}
+
+  <div bind:this={scrollEl} class="overflow-x-auto pb-1" aria-hidden="true">
     <div class="flex w-max gap-1.5">
       <div
         class="grid grid-rows-7 gap-[3px] text-right text-[10px] leading-none text-ink-muted"
@@ -125,7 +146,7 @@
           {/each}
         </div>
 
-        <div class="grid grid-flow-col grid-rows-7 gap-[3px]" aria-hidden="true">
+        <div class="grid grid-flow-col grid-rows-7 gap-[3px]">
           {#each weeks as week, i (i)}
             {#each week as cell (cell.key)}
               <div
@@ -141,7 +162,7 @@
     </div>
   </div>
 
-  <div class="mt-2 flex items-center justify-end gap-1.5 text-[11px] text-ink-muted">
+  <div class="mt-2 flex items-center justify-end gap-1.5 text-[11px] text-ink-muted" aria-hidden="true">
     <span>Less</span>
     {#each LEVEL_CLASSES as bg (bg)}
       <span class="h-[11px] w-[11px] rounded-[2px] {bg}"></span>

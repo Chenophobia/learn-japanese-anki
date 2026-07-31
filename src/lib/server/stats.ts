@@ -86,11 +86,22 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
     .orderBy(asc(dayCol))
     .all();
 
+  let streak = computeStreak(new Set(byDay.map((d) => d.date)), now);
+  // The windowed streak can only ever report up to HEATMAP_WINDOW_DAYS, since
+  // that's all the data `byDay` has. Hitting that ceiling doesn't mean the
+  // streak IS exactly that long — it means it might continue further back
+  // than the window, so resolve the true value with one extra unbounded
+  // query. This keeps the common case at the cheap windowed cost and only
+  // pays for a full history scan in the rare case that actually needs it.
+  if (streak >= HEATMAP_WINDOW_DAYS) {
+    streak = computeStreak(allActivityDays(db, userId, dayCol), now);
+  }
+
   return {
     learned,
     mature,
     young: learned - mature,
-    streak: computeStreak(new Set(byDay.map((d) => d.date)), now),
+    streak,
     retention: recall && recall.reviewed > 0 ? recall.recalled / recall.reviewed : null,
     dueToday: due?.dueToday ?? 0,
     dueTomorrow: due?.dueTomorrow ?? 0,
@@ -98,12 +109,22 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
   };
 }
 
+/** Every distinct UTC day (unbounded, no time-window filter) the user has ever reviewed on. */
+function allActivityDays(db: Db, userId: number, dayCol: ReturnType<typeof sql<string>>): Set<string> {
+  const rows = db
+    .select({ date: dayCol })
+    .from(reviewLogs)
+    .where(eq(reviewLogs.userId, userId))
+    .groupBy(dayCol)
+    .all();
+  return new Set(rows.map((r) => r.date));
+}
+
 /**
  * Consecutive UTC days with >= 1 review, ending today if today already has
  * one, otherwise ending yesterday (so an unstudied morning doesn't zero out
  * an active streak). `days` is the set of ISO day strings with activity —
- * bounded to the same 365-day window as `reviewsByDay`, so a streak longer
- * than that window reports as 365, not its true length.
+ * the caller decides whether that set is windowed or unbounded.
  */
 function computeStreak(days: Set<string>, now: Date): number {
   let cursor = days.has(isoDay(now)) ? utcDayStart(now) : utcDayStart(now, -1);

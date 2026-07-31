@@ -121,4 +121,20 @@ describe('userStats', () => {
     const { db, userId } = fixture();
     expect(userStats(db, userId, NOW).streak).toBe(0);
   });
+
+  it('resolves a streak longer than the 365-day heatmap window', () => {
+    const { db, userId, ids } = fixture();
+    const totalDays = 370; // deliberately > the 365-day reviewsByDay window
+    for (let i = 0; i < totalDays; i++) {
+      const day = new Date(NOW);
+      day.setUTCDate(day.getUTCDate() - i);
+      const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 8, 0, 0));
+      log(db, userId, ids[i % ids.length], 3, at.toISOString());
+    }
+    const stats = userStats(db, userId, NOW);
+    expect(stats.streak).toBe(totalDays);
+    // The heatmap window itself must still stay bounded to 365 days — only
+    // the streak resolution goes unbounded.
+    expect(stats.reviewsByDay.length).toBe(365);
+  });
 });
