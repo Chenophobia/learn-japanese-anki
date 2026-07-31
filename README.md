@@ -61,8 +61,10 @@ docker compose logs -f app
 ```
 
 This builds the image (see `Dockerfile`), starts the container, and publishes
-it on `127.0.0.1:3001` — bound to localhost only, since the host's nginx
-terminates TLS and reverse-proxies to it (see the nginx section below).
+it on `127.0.0.1:3001` — bound to localhost only, since nginx (itself a
+container) reverse-proxies to it rather than the app being exposed directly
+(see the nginx section below; note that section also explains why there's no
+TLS yet).
 
 The app listens on `0.0.0.0:3001` inside the container. All persistent state
 is the single SQLite file at `./data/app.db` on the host (bind-mounted to
@@ -102,17 +104,29 @@ already exist before the first `docker compose up` and Compose created it.
 If so, the backup/restore commands above need `sudo` to read or write those
 files as a non-root operator.
 
-### nginx (host)
+### nginx (containerized)
 
-Place in `/etc/nginx/sites-available/learn.chenaners.com`, symlink into
-`sites-enabled`, then run certbot:
+nginx is **not** installed on the host — it runs as a container named
+`nginx-proxy` (image `nginx:alpine`), defined in
+`~/Documents/nginx/docker-compose.yml` and attached to a `proxy-net` Docker
+network. Site configs aren't a single host file edited in place; they're
+individual `.conf` files dropped into `~/Documents/nginx/conf.d/`, which is
+bind-mounted into the container at `/etc/nginx/conf.d`. Certificates go in
+`~/Documents/nginx/certs`, bind-mounted to `/etc/nginx/certs`.
+
+Because nginx runs in its own container, `proxy_pass http://127.0.0.1:3001;`
+inside that config would point at the nginx container itself, not this app —
+`127.0.0.1` there means "the nginx container's own network namespace." This
+app publishes to `127.0.0.1:3001` **on the host**, and on Docker Desktop for
+Mac a container reaches the host through the special hostname
+`host.docker.internal`. So the proxied config uses:
 
 ```nginx
 server {
     server_name learn.chenaners.com;
 
     location / {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://host.docker.internal:3001;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -126,11 +140,37 @@ server {
 }
 ```
 
+A ready-to-use version of this lives at
+`~/Documents/nginx/conf.d/learn-japanese.conf.disabled` (following the
+pattern of the `example-app.conf.disabled` template). To activate it, drop
+the `.disabled` suffix so it lands in `conf.d` as a real `.conf` file, then
+test and reload the running container — no host nginx package, no
+`systemctl`, no `sites-enabled` symlink:
+
 ```bash
-sudo ln -s /etc/nginx/sites-available/learn.chenaners.com /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d learn.chenaners.com
+mv ~/Documents/nginx/conf.d/learn-japanese.conf.disabled ~/Documents/nginx/conf.d/learn-japanese.conf
+docker exec nginx-proxy nginx -t && docker exec nginx-proxy nginx -s reload
 ```
+
+**There is currently no TLS.** The `certs/` directory is empty and no config
+in `conf.d` listens on 443 — this note is not aspirational, it's the actual
+current state. This matters more than it might look, because it actively
+blocks login: `cookies.set` in `src/routes/login/+page.server.ts:27` and
+`src/routes/signup/+page.server.ts:39` sets the session cookie with
+`secure: true` whenever `NODE_ENV=production`, and a browser will silently
+refuse to store a `Secure` cookie delivered over plain `http://`. Concretely:
+until a certificate is issued and a `listen 443 ssl` block is added to the
+`conf.d` config (with the cert/key paths under `~/Documents/nginx/certs`),
+visiting `http://learn.chenaners.com` will let you submit the login form but
+the session cookie will never be set, so the app will bounce you right back
+to `/login`. **TLS must be configured before login works over
+`learn.chenaners.com`.** In the meantime, the app is fully reachable for
+testing directly at `http://127.0.0.1:3001` — `localhost`/`127.0.0.1` are
+exempted from the `Secure` requirement, so login works there today. How the
+certificate itself gets issued (certbot, another ACME client, manual) isn't
+prescribed here; whatever tool is used, the resulting cert and key just need
+to end up under `~/Documents/nginx/certs`, referenced from the `conf.d`
+config's `ssl_certificate`/`ssl_certificate_key` directives.
 
 This app doesn't currently read `X-Forwarded-Proto` — `@sveltejs/adapter-node`
 only consults a forwarded-protocol header when `PROTOCOL_HEADER` is set, and
@@ -144,9 +184,13 @@ no nginx change. If the deployment ever sits behind more than one proxy hop,
 also set `ORIGIN=https://learn.chenaners.com` in `.env` so SvelteKit's CSRF
 origin check passes.
 
-Verify after deploying: `https://learn.chenaners.com` redirects to `/login`,
-signup works, the session cookie shows `Secure`, and studying a card persists
-across a page reload.
+Verify after deploying: for now, since there's no TLS yet, check
+`http://127.0.0.1:3001` directly — it redirects to `/login`, signup works,
+and studying a card persists across a page reload (the session cookie won't
+show `Secure` here, which is expected on `127.0.0.1`). Once TLS is
+configured, re-verify against `https://learn.chenaners.com`: it should
+redirect to `/login`, signup should work, and the session cookie should show
+`Secure`.
 
 ## Content
 

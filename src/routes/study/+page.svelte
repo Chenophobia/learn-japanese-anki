@@ -10,9 +10,11 @@
   let submitting = $state(false);
   let rateButtons: HTMLButtonElement[] = $state([]);
 
-  // Rendered client-side so it reflects the viewer's own timezone rather
-  // than UTC.
-  const laterTodayTime = $derived(
+  // toLocaleTimeString reflects the viewer's own timezone — but this
+  // $derived also runs during SSR, so first paint uses the server's
+  // timezone (UTC in the container) until hydration re-runs it in the
+  // browser and the time updates to match the viewer.
+  const nextCardTime = $derived(
     data.laterToday
       ? new Date(data.laterToday).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
       : null
@@ -166,11 +168,11 @@
         You've worked through the whole curriculum. Reviews will keep resurfacing on schedule — check back as they
         come due.
       </p>
-    {:else if laterTodayTime}
-      <p class="text-xl font-semibold text-ink">More coming up today</p>
+    {:else if nextCardTime}
+      <p class="text-xl font-semibold text-ink">Next card at {nextCardTime}</p>
       <p class="max-w-sm text-sm text-ink-muted">
-        Nothing's due right now and today's new cards are finished, but cards you already studied come due again
-        later today, around {laterTodayTime}. Check back then.
+        Nothing's due right now and today's new cards are finished, but a card you already studied comes due again at
+        {nextCardTime}. Check back then.
       </p>
     {:else}
       <p class="text-xl font-semibold text-ink">Done for now</p>
