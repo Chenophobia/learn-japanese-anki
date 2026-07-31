@@ -22,6 +22,18 @@
   --color-hairline: #e1e4e9;
   --color-accent: #2c5282;
 
+  /*
+   * Rating-button colors for the study screen. Same construction as
+   * --color-accent above: a deep, saturated tone in light mode (contrast
+   * against near-white button text) and a lighter tint of the same hue in
+   * dark mode (contrast against near-black button text). "Easy" reuses
+   * --color-accent rather than adding a fourth hue — it reads as the calm,
+   * confident end of the same Again→Hard→Good→Easy progression.
+   */
+  --color-again: #8b2b23;
+  --color-hard: #87521d;
+  --color-good: #276847;
+
   --font-sans:
     -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic',
     'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -39,6 +51,10 @@
   --color-ink-muted: #9aa1ac;
   --color-hairline: #2b3038;
   --color-accent: #7fa8d9;
+
+  --color-again: #de857c;
+  --color-hard: #e0a66c;
+  --color-good: #59c08c;
 }
 
 @layer base {
