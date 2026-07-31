@@ -39,9 +39,22 @@ Set these in a `.env` file (copy `.env.example` to start):
 
 ## Deployment
 
-Build and run with Docker Compose:
+Get the code onto the host — clone the repo or `git pull` if it's already
+checked out there, or `scp -r` the tree over:
 
 ```bash
+git clone <repo-url> learn-japanese   # or: git pull, on an existing checkout
+cd learn-japanese
+```
+
+Then create the data directory before the first run — the container has no
+`USER` directive and runs as root, so if Compose creates `./data` itself on
+first boot it will be root-owned; creating it yourself first keeps it owned
+by the deploying user instead (see the note in "Backups" below) — and build
+and run with Docker Compose:
+
+```bash
+mkdir -p data
 cp .env.example .env
 docker compose up -d --build
 docker compose logs -f app
@@ -82,6 +95,13 @@ docker compose start app
 Restore by stopping the container, copying the backed-up files back into
 `data/`, and starting the container again.
 
+The container runs as root (no `USER` directive, matching the sibling
+`chenaners-creative` deployment), so files it writes under `./data` may end
+up owned by `root:root` on a Linux host — particularly if `./data` didn't
+already exist before the first `docker compose up` and Compose created it.
+If so, the backup/restore commands above need `sudo` to read or write those
+files as a non-root operator.
+
 ### nginx (host)
 
 Place in `/etc/nginx/sites-available/learn.chenaners.com`, symlink into
@@ -112,11 +132,16 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d learn.chenaners.com
 ```
 
-`X-Forwarded-Proto` matters: without it, requests can look like plain HTTP to
-the app, and SvelteKit's own request handling assumes plain HTTP too — which
-undermines the "secure cookie" story you get from putting TLS in front of the
-app. If the deployment ever sits behind more than one proxy hop, also set
-`ORIGIN=https://learn.chenaners.com` in `.env` so SvelteKit's CSRF
+This app doesn't currently read `X-Forwarded-Proto` — `@sveltejs/adapter-node`
+only consults a forwarded-protocol header when `PROTOCOL_HEADER` is set, and
+nothing here sets it, and SvelteKit's cookie handling already defaults
+`secure` to true for any non-`localhost` host regardless of perceived
+protocol. Forward it anyway: it's standard reverse-proxy practice, it means
+nginx is telling the truth about the original scheme instead of silently
+omitting it, and it means turning on `PROTOCOL_HEADER=x-forwarded-proto`
+later (if some code path ever needs to know the original protocol) requires
+no nginx change. If the deployment ever sits behind more than one proxy hop,
+also set `ORIGIN=https://learn.chenaners.com` in `.env` so SvelteKit's CSRF
 origin check passes.
 
 Verify after deploying: `https://learn.chenaners.com` redirects to `/login`,
