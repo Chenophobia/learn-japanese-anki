@@ -14,7 +14,7 @@
 
 {#if data.user}
   <header class="sticky top-0 z-10 border-b border-hairline bg-surface">
-    <nav class="mx-auto flex w-full max-w-3xl items-center gap-1 p-3 sm:gap-2 sm:p-4" aria-label="Primary">
+    <nav class="mx-auto flex w-full max-w-3xl items-center gap-1 p-2 sm:gap-2 sm:p-4" aria-label="Primary">
       {#each links as link}
         {@const isActive = page.url.pathname === link.href}
         <a
