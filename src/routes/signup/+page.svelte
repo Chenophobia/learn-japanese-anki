@@ -1,6 +1,12 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { page } from '$app/state';
   let { form } = $props();
+
+  // Symmetric with login's forwarding of ?next= — a user who arrived here
+  // via /login's "Sign up" link and then decides they already have an
+  // account shouldn't lose the destination either.
+  const loginHref = $derived(`/login${page.url.search}`);
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-paper p-6">
@@ -55,7 +61,7 @@
     <p class="text-center text-sm text-ink-muted">
       Already have an account?
       <a
-        href="/login"
+        href={loginHref}
         class="rounded-sm font-medium text-accent underline underline-offset-2 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >Sign in</a
       >

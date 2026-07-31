@@ -2,6 +2,7 @@ import { and, asc, eq, gte, sql } from 'drizzle-orm';
 import type { Db } from './db/connect';
 import { userCards, reviewLogs } from './db/schema';
 import { MATURE_STABILITY_DAYS, REVIEW_STATE } from './progress';
+import { utcDayStart } from './utc-day';
 
 export type Stats = {
   learned: number; // user_cards rows (cards introduced)
@@ -11,15 +12,15 @@ export type Stats = {
   retention: number | null; // share of Review-state reviews rated >= Hard; null with no data
   dueToday: number;
   dueTomorrow: number;
-  reviewsByDay: Array<{ date: string; count: number }>; // last 365 days, only non-zero days
+  reviewsByDay: Array<{ date: string; count: number }>; // last HEATMAP_WINDOW_DAYS days, only non-zero days
 };
 
-const HEATMAP_WINDOW_DAYS = 365;
-
-/** Midnight UTC on `date`, optionally shifted by `offsetDays`. */
-function utcDayStart(date: Date, offsetDays = 0): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + offsetDays));
-}
+// Matches Heatmap.svelte's grid exactly: WEEKS (53) * 7 days. The grid
+// always renders a fixed 53x7 block, so the query must fetch that whole
+// range — fetching fewer days than the grid draws left up to 6 leftmost
+// columns rendering as "0 reviews" for days that were never queried
+// (Finding 6 of the final branch review).
+const HEATMAP_WINDOW_DAYS = 53 * 7;
 
 /** `YYYY-MM-DD` for the UTC calendar day containing `date`. */
 function isoDay(date: Date): string {

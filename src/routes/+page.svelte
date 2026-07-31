@@ -25,7 +25,7 @@
       {#if courseComplete}
         Every unit is done — nice work.
       {:else}
-        <span class="tabular-nums">{data.counts.due}</span> due today ·
+        <span class="tabular-nums">{data.counts.due}</span> due now ·
         <span class="tabular-nums">{data.counts.newAvailable}</span> new available
       {/if}
     </p>

@@ -122,9 +122,10 @@ describe('userStats', () => {
     expect(userStats(db, userId, NOW).streak).toBe(0);
   });
 
-  it('resolves a streak longer than the 365-day heatmap window', () => {
+  it('resolves a streak longer than the heatmap window', () => {
     const { db, userId, ids } = fixture();
-    const totalDays = 370; // deliberately > the 365-day reviewsByDay window
+    const HEATMAP_WINDOW_DAYS = 53 * 7; // matches Heatmap.svelte's 53-week grid
+    const totalDays = HEATMAP_WINDOW_DAYS + 5; // deliberately > the reviewsByDay window
     for (let i = 0; i < totalDays; i++) {
       const day = new Date(NOW);
       day.setUTCDate(day.getUTCDate() - i);
@@ -133,8 +134,8 @@ describe('userStats', () => {
     }
     const stats = userStats(db, userId, NOW);
     expect(stats.streak).toBe(totalDays);
-    // The heatmap window itself must still stay bounded to 365 days — only
-    // the streak resolution goes unbounded.
-    expect(stats.reviewsByDay.length).toBe(365);
+    // The heatmap window itself must still stay bounded — only the streak
+    // resolution goes unbounded.
+    expect(stats.reviewsByDay.length).toBe(HEATMAP_WINDOW_DAYS);
   });
 });

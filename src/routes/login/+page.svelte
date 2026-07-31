@@ -1,6 +1,13 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { page } from '$app/state';
   let { form } = $props();
+
+  // Forward whatever query string (e.g. ?next=/stats) got this page loaded,
+  // so a user bounced here who then clicks "Sign up" doesn't lose the
+  // original destination — safeNextPath is applied where `next` is actually
+  // honored (the signup and login form actions), not here.
+  const signupHref = $derived(`/signup${page.url.search}`);
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-paper p-6">
@@ -55,7 +62,7 @@
     <p class="text-center text-sm text-ink-muted">
       No account?
       <a
-        href="/signup"
+        href={signupHref}
         class="rounded-sm font-medium text-accent underline underline-offset-2 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >Sign up</a
       >

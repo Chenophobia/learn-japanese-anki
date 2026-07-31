@@ -10,6 +10,14 @@
   let submitting = $state(false);
   let rateButtons: HTMLButtonElement[] = $state([]);
 
+  // Rendered client-side so it reflects the viewer's own timezone rather
+  // than UTC.
+  const laterTodayTime = $derived(
+    data.laterToday
+      ? new Date(data.laterToday).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : null
+  );
+
   // A new card object means a new question — hide the answer again. This
   // must be keyed off the card id (not just "did data change") so that
   // re-running load with the *same* card (e.g. after a rejected/mismatched
@@ -157,6 +165,12 @@
       <p class="max-w-sm text-sm text-ink-muted">
         You've worked through the whole curriculum. Reviews will keep resurfacing on schedule — check back as they
         come due.
+      </p>
+    {:else if laterTodayTime}
+      <p class="text-xl font-semibold text-ink">More coming up today</p>
+      <p class="max-w-sm text-sm text-ink-muted">
+        Nothing's due right now and today's new cards are finished, but cards you already studied come due again
+        later today, around {laterTodayTime}. Check back then.
       </p>
     {:else}
       <p class="text-xl font-semibold text-ink">Done for now</p>

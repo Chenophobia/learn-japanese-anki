@@ -4,12 +4,13 @@ import { hashPassword } from '$lib/server/auth/password';
 import { validateCredentials } from '$lib/server/auth/credentials';
 import { usernameTaken, insertUser } from '$lib/server/auth/users';
 import { createSession, SESSION_COOKIE, sessionMaxAge } from '$lib/server/auth/session';
+import { safeNextPath } from '$lib/server/auth/safe-redirect';
 import type { Actions } from './$types';
 
 const USERNAME_TAKEN_ERROR = 'That username is already taken.';
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request, cookies, url }) => {
     const form = await request.formData();
     const username = String(form.get('username') ?? '').trim();
     const password = String(form.get('password') ?? '');
@@ -40,6 +41,6 @@ export const actions: Actions = {
       maxAge: sessionMaxAge(remember)
     });
 
-    throw redirect(303, '/');
+    throw redirect(303, safeNextPath(url.searchParams.get('next')));
   }
 };

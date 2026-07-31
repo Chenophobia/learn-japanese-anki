@@ -15,11 +15,6 @@ export type GrammarBack = { meaning: string; example: string };
 export type CardFront = KanaFront | KanjiFront | VocabFront | GrammarFront;
 export type CardBack = KanaBack | KanjiBack | VocabBack | GrammarBack;
 
-export function parseCardFaces(
-  kind: UnitKind,
-  frontJson: string,
-  backJson: string
-): { front: CardFront; back: CardBack } {
-  void kind; // shapes are discriminated by the unit's kind at render time
+export function parseCardFaces(frontJson: string, backJson: string): { front: CardFront; back: CardBack } {
   return { front: JSON.parse(frontJson), back: JSON.parse(backJson) };
 }

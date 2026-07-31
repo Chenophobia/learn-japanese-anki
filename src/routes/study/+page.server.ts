@@ -1,8 +1,9 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { currentUnitId, nextQueueItem, queueCounts, recordReview } from '$lib/server/queue';
+import { currentUnitId, nextDueTime, nextQueueItem, queueCounts, recordReview } from '$lib/server/queue';
 import { previewRatings } from '$lib/server/scheduler';
 import { parseCardFaces } from '$lib/cards';
+import { utcDayStart } from '$lib/server/utc-day';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -12,16 +13,28 @@ export const load: PageServerLoad = async ({ locals }) => {
   const counts = queueCounts(db, userId, now);
 
   if (!item) {
-    // nextQueueItem returns null for two different reasons: the daily cap on
-    // new cards is reached for today (more content exists, come back
-    // tomorrow) or every unit in the curriculum has been introduced (nothing
-    // left to teach, ever). currentUnitId distinguishes them: it is null only
-    // once every card has been introduced to this user.
+    // nextQueueItem returns null for three different reasons, and the page
+    // must read correctly for all of them:
+    //  1. every unit in the curriculum has been introduced (nothing left to
+    //     teach, ever) — currentUnitId is null only in this case.
+    //  2. the daily cap on new cards is reached for today, but cards already
+    //     introduced (e.g. minutes ago, on their short FSRS learning steps)
+    //     will come due again later today.
+    //  3. genuinely nothing more until tomorrow.
+    // This extra query only runs once the queue is already empty, so it
+    // never touches the common "a card IS available" path.
     const curriculumFinished = currentUnitId(db, userId) === null;
-    return { item: null, counts, curriculumFinished };
+    let laterToday: string | null = null;
+    if (!curriculumFinished) {
+      const next = nextDueTime(db, userId, now);
+      if (next && next < utcDayStart(now, 1)) {
+        laterToday = next.toISOString();
+      }
+    }
+    return { item: null, counts, curriculumFinished, laterToday };
   }
 
-  const { front, back } = parseCardFaces(item.unitKind, item.frontJson, item.backJson);
+  const { front, back } = parseCardFaces(item.frontJson, item.backJson);
   return {
     counts,
     item: {

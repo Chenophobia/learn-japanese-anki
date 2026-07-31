@@ -1,14 +1,28 @@
 <script lang="ts">
   let { theme }: { theme: 'light' | 'dark' } = $props();
-  let current = $state(theme);
+
+  // `current` derives from the `theme` prop rather than snapshotting it, so
+  // a change to the prop (e.g. the cookie being set by something other than
+  // this toggle) is picked up instead of silently ignored. `override` holds
+  // the optimistic value between a click and the next time the prop itself
+  // actually changes; the effect below clears it whenever that happens, so
+  // a real prop update always wins over a stale optimistic click.
+  let override: 'light' | 'dark' | null = $state(null);
+  const current = $derived(override ?? theme);
+
+  $effect(() => {
+    theme;
+    override = null;
+  });
 
   async function toggle() {
-    current = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.classList.toggle('dark', current === 'dark');
+    const next = current === 'dark' ? 'light' : 'dark';
+    override = next;
+    document.documentElement.classList.toggle('dark', next === 'dark');
     await fetch('/api/theme', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ theme: current })
+      body: JSON.stringify({ theme: next })
     });
   }
 </script>
