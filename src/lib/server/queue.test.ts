@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Rating } from 'ts-fsrs';
+import { Rating } from './scheduler';
 import { createTestDb } from './db/test-db';
 import { chapters, units, cards, users, userCards } from './db/schema';
 import { currentUnitId, nextQueueItem, queueCounts, recordReview } from './queue';
@@ -81,10 +81,11 @@ describe('queueCounts', () => {
   });
 
   it('counts due reviews across every introduced unit', () => {
-    const { db, userId, u1, made } = fixture();
+    const { db, userId, u1, u2, made } = fixture();
     recordReview(db, userId, made[u1.id][0], Rating.Again, NOW);
+    recordReview(db, userId, made[u2.id][0], Rating.Again, NOW);
     const later = new Date('2026-03-11T09:00:00.000Z');
-    expect(queueCounts(db, userId, later).due).toBe(1);
+    expect(queueCounts(db, userId, later).due).toBe(2);
   });
 });
 

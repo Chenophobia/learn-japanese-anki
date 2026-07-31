@@ -50,15 +50,15 @@ function introducedToday(db: Db, userId: number, unitId: number, now: Date): num
   return row?.n ?? 0;
 }
 
-export function queueCounts(db: Db, userId: number, now: Date = new Date()): { due: number; newAvailable: number } {
-  const [dueRow] = db
-    .select({ n: sql<number>`count(*)` })
-    .from(userCards)
-    .where(and(eq(userCards.userId, userId), lte(userCards.due, now.toISOString())))
-    .all();
-
+/**
+ * Computes the current unit and how many new cards it can still offer today.
+ * Shared by `queueCounts` and `nextQueueItem` so the two can never disagree
+ * about the cap: both read the same unit id and the same `newAvailable` value
+ * from a single call, rather than each recomputing it independently.
+ */
+function capState(db: Db, userId: number, now: Date): { unitId: number | null; newAvailable: number } {
   const unitId = currentUnitId(db, userId);
-  if (unitId === null) return { due: dueRow?.n ?? 0, newAvailable: 0 };
+  if (unitId === null) return { unitId: null, newAvailable: 0 };
 
   const [unit] = db.select().from(units).where(eq(units.id, unitId)).all();
   const remainingInUnit = db
@@ -69,7 +69,18 @@ export function queueCounts(db: Db, userId: number, now: Date = new Date()): { d
     .all().length;
 
   const capLeft = Math.max(0, unit.dailyCap - introducedToday(db, userId, unitId, now));
-  return { due: dueRow?.n ?? 0, newAvailable: Math.min(capLeft, remainingInUnit) };
+  return { unitId, newAvailable: Math.min(capLeft, remainingInUnit) };
+}
+
+export function queueCounts(db: Db, userId: number, now: Date = new Date()): { due: number; newAvailable: number } {
+  const [dueRow] = db
+    .select({ n: sql<number>`count(*)` })
+    .from(userCards)
+    .where(and(eq(userCards.userId, userId), lte(userCards.due, now.toISOString())))
+    .all();
+
+  const { newAvailable } = capState(db, userId, now);
+  return { due: dueRow?.n ?? 0, newAvailable };
 }
 
 export function nextQueueItem(db: Db, userId: number, now: Date = new Date()): QueueItem | null {
@@ -99,10 +110,8 @@ export function nextQueueItem(db: Db, userId: number, now: Date = new Date()): Q
     };
   }
 
-  if (queueCounts(db, userId, now).newAvailable === 0) return null;
-
-  const unitId = currentUnitId(db, userId);
-  if (unitId === null) return null;
+  const { unitId, newAvailable } = capState(db, userId, now);
+  if (unitId === null || newAvailable === 0) return null;
 
   const [fresh] = db
     .select({
