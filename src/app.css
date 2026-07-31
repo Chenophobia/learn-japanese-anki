@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+/* Exclude docs/ (design specs, plans) from Tailwind's automatic content scan —
+   they contain example class strings that aren't used by any component. */
+@source not "../docs";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
