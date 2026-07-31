@@ -6,9 +6,61 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Design tokens. Each is a real value in @theme (the light default) and is
+ * re-pointed in `.dark` — utilities like `bg-paper` or `text-accent` never
+ * need a `dark:` prefix because the underlying CSS variable is what changes.
+ * Palette: "paper" neutrals (a cool off-white, not the cream-and-terracotta
+ * default) with a single indigo accent ("aizome", the Japanese indigo-dye
+ * blue) reserved for the current-page indicator and focus rings.
+ */
+@theme {
+  --color-paper: #f6f7f8;
+  --color-surface: #ffffff;
+  --color-ink: #1b1d21;
+  --color-ink-muted: #61666e;
+  --color-hairline: #e1e4e9;
+  --color-accent: #2c5282;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic',
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 :root {
   color-scheme: light;
 }
+
 .dark {
   color-scheme: dark;
+  --color-paper: #14171c;
+  --color-surface: #1b1f26;
+  --color-ink: #e7e9ec;
+  --color-ink-muted: #9aa1ac;
+  --color-hairline: #2b3038;
+  --color-accent: #7fa8d9;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  /* Generous line-height for legibility — Japanese glyphs are visually
+     denser than Latin text at the same font size, and card faces in later
+     tasks inherit this base. */
+  body {
+    line-height: 1.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

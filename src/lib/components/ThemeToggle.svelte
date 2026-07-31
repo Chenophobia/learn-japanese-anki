@@ -1,0 +1,56 @@
+<script lang="ts">
+  let { theme }: { theme: 'light' | 'dark' } = $props();
+  let current = $state(theme);
+
+  async function toggle() {
+    current = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.classList.toggle('dark', current === 'dark');
+    await fetch('/api/theme', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ theme: current })
+    });
+  }
+</script>
+
+<button
+  type="button"
+  onclick={toggle}
+  aria-label={current === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+  title={current === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+  class="relative grid h-9 w-9 shrink-0 place-items-center rounded-md text-ink-muted transition-colors hover:bg-black/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:hover:bg-white/10"
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    class="absolute h-5 w-5 transition-all duration-200"
+    class:scale-0={current === 'dark'}
+    class:opacity-0={current === 'dark'}
+    class:rotate-90={current === 'dark'}
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path
+      d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+    />
+  </svg>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    class="absolute h-5 w-5 transition-all duration-200"
+    class:scale-0={current === 'light'}
+    class:opacity-0={current === 'light'}
+    class:-rotate-90={current === 'light'}
+  >
+    <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" />
+  </svg>
+</button>
