@@ -7,6 +7,16 @@
     back: CardBack;
     revealed: boolean;
   } = $props();
+
+  // Shared by both faces below. The two faces are stacked in one grid cell
+  // and must stay dimensionally identical — any divergence in padding or
+  // min-height would make the card change size mid-rotation. Keep only the
+  // truly per-face classes (the rotateY transform, inert/aria-hidden) inline
+  // on each face so they can't drift apart from a one-sided edit.
+  const face =
+    'col-start-1 row-start-1 flex min-h-[16rem] flex-col items-center justify-center gap-6 ' +
+    'rounded-2xl border border-hairline bg-surface p-6 text-center [backface-visibility:hidden] ' +
+    '[-webkit-backface-visibility:hidden] sm:min-h-[20rem] sm:p-10';
 </script>
 
 <!--
@@ -28,13 +38,7 @@
     class="grid transition-transform duration-300 ease-out [transform-style:preserve-3d]
       {revealed ? '[transform:rotateY(180deg)]' : ''}"
   >
-    <div
-      class="col-start-1 row-start-1 flex min-h-[16rem] flex-col items-center justify-center gap-6
-        rounded-2xl border border-hairline bg-surface p-6 text-center [backface-visibility:hidden]
-        [-webkit-backface-visibility:hidden] sm:min-h-[20rem] sm:p-10"
-      inert={revealed}
-      aria-hidden={revealed}
-    >
+    <div class={face} inert={revealed} aria-hidden={revealed}>
       {#if kind === 'kana' || kind === 'kanji'}
         <div class="text-8xl leading-none text-ink sm:text-9xl">{(front as { char: string }).char}</div>
       {:else if kind === 'vocab'}
@@ -49,9 +53,7 @@
     </div>
 
     <div
-      class="col-start-1 row-start-1 flex min-h-[16rem] flex-col items-center justify-center gap-6
-        rounded-2xl border border-hairline bg-surface p-6 text-center [backface-visibility:hidden]
-        [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] sm:min-h-[20rem] sm:p-10"
+      class="{face} [transform:rotateY(180deg)]"
       inert={!revealed}
       aria-hidden={!revealed}
     >
