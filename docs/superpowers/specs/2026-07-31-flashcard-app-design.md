@@ -4,14 +4,14 @@ Status: approved (brainstorming session, 2026-07-31)
 
 > **Superseded (2026-08-01):** the open self-signup described below was
 > removed after launch. The app went live on a public domain
-> (`learn.chenaners.com`) and open registration invited bot accounts; the
+> (`<app-hostname>`) and open registration invited bot accounts; the
 > operator now creates accounts directly (see README.md's "Creating users").
 > The rest of this document is left as-is as a historical record of the
 > original design.
 
 ## Goal
 
-A self-hosted, Docker-deployable spaced-repetition flashcard app for the N4 curriculum documented in `docs/curriculum-plan.md`, using the FSRS-6 scheduling algorithm documented in `docs/fsrs-algorithm.md`. Multiple independent users can log in, each tracking their own progress through the same shared course content. Deployed at `learn.chenaners.com` behind the user's existing host nginx, following the same conventions as the sibling project `chenaners-creative` (single Docker container, bind-mounted SQLite, host nginx terminates TLS).
+A self-hosted, Docker-deployable spaced-repetition flashcard app for the N4 curriculum documented in `docs/curriculum-plan.md`, using the FSRS-6 scheduling algorithm documented in `docs/fsrs-algorithm.md`. Multiple independent users can log in, each tracking their own progress through the same shared course content. Deployed at `<app-hostname>` behind the user's existing host nginx, following the same conventions as the sibling project `sibling-app` (single Docker container, bind-mounted SQLite, host nginx terminates TLS).
 
 Explicitly in scope: login/signup with a "remember this device" option, a chapter/progression map page, a flashcard review page, and a KPI/metrics page, with a light/dark theme toggle throughout.
 
@@ -21,10 +21,10 @@ Explicitly out of scope for v1: audio/TTS, kanji stroke-order animations, per-us
 
 - **SvelteKit** + TypeScript, `adapter-node` (server-rendered, minimal client JS)
 - **Tailwind CSS** for styling
-- **SQLite** via **Drizzle ORM**, single file, bind-mounted from the host (same durability pattern as chenaners-creative)
+- **SQLite** via **Drizzle ORM**, single file, bind-mounted from the host (same durability pattern as sibling-app)
 - **`ts-fsrs`** (npm package) for all scheduling math — used server-side only, per the recommendation in `docs/fsrs-algorithm.md` §8
 - **Hand-rolled auth**: no auth library. Password hashing via `bcrypt` (or `@node-rs/argon2`), sessions via a DB-backed `sessions` table + a signed `httpOnly` cookie holding the session id. SvelteKit's most common auth library (Lucia) is sunset and its own docs now recommend rolling your own, so a small auth module avoids an abandoned dependency.
-- **Docker**: multi-stage build (deps → build → run), `docker-compose.yml` publishing to a `127.0.0.1:<port>` (suggest **3001**, since chenaners-creative already occupies 3000 on this host), bind-mounting `./data` for the SQLite file. Host nginx (outside Docker, already running on this machine) reverse-proxies `learn.chenaners.com` to that port, mirroring the nginx block already documented in chenaners-creative's README.
+- **Docker**: multi-stage build (deps → build → run), `docker-compose.yml` publishing to a `127.0.0.1:<port>` (suggest **3001**, since sibling-app already occupies 3000 on this host), bind-mounting `./data` for the SQLite file. Host nginx (outside Docker, already running on this machine) reverse-proxies `<app-hostname>` to that port, mirroring the nginx block already documented in sibling-app's README.
 
 ## Data model
 
@@ -171,7 +171,7 @@ docker-compose.yml
     restart: unless-stopped
 ```
 
-`.env` holds the session-cookie signing secret and the SQLite file path. Host nginx config for `learn.chenaners.com` mirrors the sample already documented in chenaners-creative's README: `proxy_pass http://127.0.0.1:3001;` plus `X-Forwarded-Proto` header.
+`.env` holds the session-cookie signing secret and the SQLite file path. Host nginx config for `<app-hostname>` mirrors the sample already documented in sibling-app's README: `proxy_pass http://127.0.0.1:3001;` plus `X-Forwarded-Proto` header.
 
 **Seed data**: the full curriculum content from `docs/curriculum-plan.md` is transcribed once into a TypeScript/JSON seed file (not parsed from markdown at runtime) and loaded into `chapters`/`units`/`cards` via a Drizzle migration that runs on first boot if those tables are empty.
 

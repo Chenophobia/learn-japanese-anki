@@ -47,8 +47,13 @@ Around that core:
 - **CodeQL** (`.github/workflows/codeql.yml`) scans for security issues on
   every push/PR and weekly.
 - **Dependabot** (`.github/dependabot.yml`) opens weekly PRs for npm
-  packages (minor/patch bumps grouped into one PR), GitHub Actions, and the
-  Dockerfile base image.
+  packages, GitHub Actions, and the Dockerfile base image, all on Monday
+  morning so a week's updates arrive together. Everything is grouped: npm
+  produces at most two PRs (one for minor/patch, one for majors) rather than
+  one per package, and Actions and Docker produce one each. Two bumps are
+  ignored because they can never be right — TypeScript majors (SvelteKit's
+  peer range stops at 6) and Node majors (only even-numbered lines become
+  LTS, and Dependabot offers the newest tag regardless).
 - **Auto-merge** (`.github/workflows/dependabot-auto-merge.yml`) flags
   Dependabot's minor/patch PRs to merge automatically **once CI passes**.
   If CI fails, nothing merges and nothing deploys — the PR just stays open
@@ -134,14 +139,16 @@ The pieces, all under `deploy/`:
 - `update.sh` — pull + `up -d` + prune, logging only actual deploys to
   `deploy/update.log`.
 - `com.chenophobia.learn-japanese.update.plist` — launchd agent running the
-  script every 5 minutes (install instructions in the file's comment).
+  script every 5 minutes. It is a template: launchd won't expand `~`, so
+  `__REPO__` is substituted with the checkout path at install time (see the
+  comment in the file).
 
-One-time cutover from the build-on-host container:
+One-time cutover from the build-on-host container, run from the repo root:
 
 ```bash
 docker compose down                        # stop the locally-built container (data survives in ./data)
 docker compose -f deploy/compose.yml up -d # start from the GHCR image
-cp deploy/com.chenophobia.learn-japanese.update.plist ~/Library/LaunchAgents/
+sed "s|__REPO__|$PWD|g" deploy/com.chenophobia.learn-japanese.update.plist > ~/Library/LaunchAgents/com.chenophobia.learn-japanese.update.plist
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.chenophobia.learn-japanese.update.plist
 ```
 
@@ -262,8 +269,8 @@ docker compose start app
 Restore by stopping the container, copying the backed-up files back into
 `data/`, and starting the container again.
 
-The container runs as root (no `USER` directive, matching the sibling
-`chenaners-creative` deployment), so files it writes under `./data` may end
+The container runs as root (no `USER` directive, matching the operator's
+other deployments on this host), so files it writes under `./data` may end
 up owned by `root:root` on a Linux host — particularly if `./data` didn't
 already exist before the first `docker compose up` and Compose created it.
 If so, the backup/restore commands above need `sudo` to read or write those
@@ -308,47 +315,43 @@ app stopped rather than against the live container.
 The real request path to this app is:
 
 ```
-Browser --HTTPS--> Cloudflare edge --Cloudflare Tunnel--> cloudflared (on this Mac)
+Browser --HTTPS--> Cloudflare edge --Cloudflare Tunnel--> cloudflared (on the host Mac)
        --> 127.0.0.1:8089 (Homebrew nginx on the HOST) --> 127.0.0.1:3001 (Docker app)
 ```
 
-**TLS is terminated by Cloudflare at the edge.** The origin (this Mac) never
-holds a certificate and doesn't need one. Everything downstream of
-Cloudflare — the tunnel hop into `cloudflared` and the proxy hop from
-`cloudflared` into nginx — is plain HTTP over localhost, which is fine
-because none of it leaves the machine.
+**TLS is terminated by Cloudflare at the edge.** The origin never holds a
+certificate and doesn't need one. Everything downstream of Cloudflare — the
+tunnel hop into `cloudflared` and the proxy hop from `cloudflared` into
+nginx — is plain HTTP over localhost, which is fine because none of it
+leaves the machine.
 
-`cloudflared` runs as a Homebrew service on the host (not a container):
+`cloudflared` runs as a Homebrew service on the host (not a container),
+started with `--config ~/.cloudflared/config.yml --no-autoupdate run`.
 
-```
-/opt/homebrew/opt/cloudflared/bin/cloudflared tunnel --config /Users/chenanigans/.cloudflared/config.yml --no-autoupdate run
-```
-
-Its config (`~/.cloudflared/config.yml`) maps hostnames to local ports via
-`ingress` rules, matched top-to-bottom with a catch-all 404 at the end:
+That config maps hostnames to local ports via `ingress` rules, matched
+top-to-bottom with a catch-all 404 at the end. Real tunnel ids, credential
+paths, and hostnames are deliberately not reproduced here — this repo is
+public, and the live values are on the host:
 
 ```yaml
-tunnel: c1034261-b58e-4617-9a78-071118577f1e
-credentials-file: /Users/chenanigans/.cloudflared/c1034261-b58e-4617-9a78-071118577f1e.json
+tunnel: <tunnel-id>
+credentials-file: ~/.cloudflared/<tunnel-id>.json
 ingress:
-  - hostname: chenaners.com
-    service: http://localhost:8088
-  - hostname: www.chenaners.com
-    service: http://localhost:8088
+  - hostname: <app-hostname>
+    service: http://localhost:8089
   - service: http_status:404
 ```
 
 The reverse proxy itself is **Homebrew nginx running on the host** — not a
-container — with site configs in `/opt/homebrew/etc/nginx/servers/`. The
-existing `chenaners.conf` there listens on `127.0.0.1:8088`. This app gets
-its own file, `/opt/homebrew/etc/nginx/servers/learn-japanese.conf`,
-listening on `127.0.0.1:8089` instead (8088 is already taken by
-`chenaners.conf`) and proxying to the app container:
+container — with site configs in `/opt/homebrew/etc/nginx/servers/`. This
+app gets its own file there, `learn-japanese.conf`, listening on
+`127.0.0.1:8089` (a lower port was already taken by another site on the same
+host) and proxying to the app container:
 
 ```nginx
 server {
     listen 127.0.0.1:8089;
-    server_name learn.chenaners.com;
+    server_name <app-hostname>;
 
     location / {
         proxy_pass http://127.0.0.1:3001;
@@ -364,30 +367,33 @@ server {
 }
 ```
 
-Both `127.0.0.1:8088` and `127.0.0.1:8089` are bound to localhost only —
-never exposed publicly. Public traffic only ever reaches them via the
-Cloudflare Tunnel.
+Every one of these ports is bound to localhost only — never exposed
+publicly. Public traffic only ever reaches them via the Cloudflare Tunnel.
 
 This config file already exists on the host and `nginx -t` passes against
 it, but it is **not live yet**. Going live needs this checklist, in order:
 
 - [ ] Reload host nginx to pick up the new server block — this is Homebrew
       nginx on the host, **not** `docker exec`:
-      `bash
-nginx -t && nginx -s reload
-`
-- [ ] Add an ingress rule for `learn.chenaners.com` to
+
+  ```bash
+  nginx -t && nginx -s reload
+  ```
+
+- [ ] Add an ingress rule for the app's hostname to
       `~/.cloudflared/config.yml`, pointing at `http://localhost:8089`,
       **above** the catch-all `- service: http_status:404` entry —
       cloudflared matches ingress rules in order and the catch-all swallows
       anything listed after it.
 - [ ] Create the DNS route:
-      `bash
-cloudflared tunnel route dns c1034261-b58e-4617-9a78-071118577f1e learn.chenaners.com
-`
+
+  ```bash
+  cloudflared tunnel route dns <tunnel-id> <app-hostname>
+  ```
+
 - [ ] Restart the tunnel so it picks up the new config. This briefly
-      interrupts `chenaners.com` too, since both hostnames share the one
-      `cloudflared` process.
+      interrupts every other hostname on the same tunnel, since they all
+      share the one `cloudflared` process.
 
 `X-Forwarded-Proto` is hardcoded to `https` above rather than passed through
 as `$scheme` because the tunnel-to-nginx hop is plain HTTP — `$scheme` there
@@ -400,26 +406,25 @@ regardless of perceived protocol. It's forwarded anyway as standard
 reverse-proxy practice and so that turning on
 `PROTOCOL_HEADER=x-forwarded-proto` later (if some code path ever needs the
 original protocol) is a no-op. If the deployment ever sits behind more than
-one proxy hop, also set `ORIGIN=https://learn.chenaners.com` in `.env` so
+one proxy hop, also set `ORIGIN=https://<app-hostname>` in `.env` so
 SvelteKit's CSRF origin check passes.
 
 Secure cookies already work fine, and always would have: the browser's
 connection to Cloudflare is HTTPS, and the `Secure` cookie attribute is
 enforced by the browser against its _own_ connection scheme — the plaintext
 hops behind Cloudflare are invisible to it. There is no TLS gap blocking
-login; the only remaining work is the checklist above to route
-`learn.chenaners.com` to this app at all.
+login; the only remaining work is the checklist above to route the hostname
+to this app at all.
 
-**The `nginx-proxy` Docker container (defined under `~/Documents/nginx/`) is
-not part of this path.** It publishes port 80 and its `conf.d` holds only a
+**The host also has an `nginx-proxy` Docker container, and it is not part of
+this path.** It publishes port 80 and its `conf.d` holds only a
 `default.conf` returning 404 — nothing routes through it. Don't drop a
-config into `~/Documents/nginx/conf.d/` expecting it to take effect; it
-won't, because the tunnel talks to Homebrew nginx on port 8088/8089, not to
-this container.
+config into that container's `conf.d/` expecting it to take effect; it
+won't, because the tunnel talks to Homebrew nginx, not to this container.
 
-Verify after deploying: once the checklist above is complete, check
-`https://learn.chenaners.com` — it should redirect to `/login`, a user
-created with `create-user` (see "Creating users" above) should be able to
+Verify after deploying: once the checklist above is complete, load the app's
+hostname over HTTPS — it should redirect to `/login`, a user created with
+`create-user` (see "Creating users" above) should be able to
 sign in, and studying a card should persist across a page reload, with the
 session cookie showing `Secure`. In the meantime the app remains
 reachable for testing directly at `http://127.0.0.1:3001`

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a Docker-deployable, multi-user spaced-repetition flashcard web app for the JLPT N4 curriculum, scheduled by FSRS-6, served at `learn.chenaners.com`.
+**Goal:** Build a Docker-deployable, multi-user spaced-repetition flashcard web app for the JLPT N4 curriculum, scheduled by FSRS-6, served at `<app-hostname>`.
 
 **Architecture:** SvelteKit (`adapter-node`) server-rendered app. All scheduling math, queue assembly, and auth run server-side; the browser only renders and posts form actions. State lives in one bind-mounted SQLite file accessed through Drizzle ORM. Static curriculum content (chapters → units → cards) is seeded once from TypeScript modules; per-user progress lives in `user_cards` + append-only `review_logs`.
 
@@ -12,11 +12,11 @@
 
 - Reference documents — read before implementing: `docs/superpowers/specs/2026-07-31-flashcard-app-design.md` (the spec), `docs/fsrs-algorithm.md` (scheduling), `docs/curriculum-plan.md` (all card content).
 - Node 22. Package manager: `npm` (lockfile committed).
-- Container port and host publish port are both **3001** (3000 is taken by the sibling `chenaners-creative` app on the same host).
+- Container port and host publish port are both **3001** (3000 is taken by the sibling `sibling-app` app on the same host).
 - SQLite file path comes from env: `DATA_DIR` (default `/app/data` in container, `./data` in dev). DB file is `${DATA_DIR}/app.db`.
 - Session cookie name: `session`. Attributes: `httpOnly`, `secure` (except when `NODE_ENV !== 'production'`), `sameSite: 'lax'`, `path: '/'`.
 - Session lifetime: `remember=0` → 1 day; `remember=1` → 365 days.
-- **Light theme is the default** (matches `chenaners-creative`). Theme is persisted in a non-httpOnly `theme` cookie so SSR emits the correct class with no flash.
+- **Light theme is the default** (matches `sibling-app`). Theme is persisted in a non-httpOnly `theme` cookie so SSR emits the correct class with no flash.
 - All timestamps stored as ISO 8601 strings in UTC (`new Date().toISOString()`).
 - FSRS parameters are the library defaults with `enable_fuzz: true` (see `docs/fsrs-algorithm.md` §5, §8). No per-user parameter training in v1.
 - Never import `ts-fsrs`, `better-sqlite3`, or anything under `src/lib/server/` into a `.svelte` component or a `+page.ts` — server-only modules live under `src/lib/server/` and SvelteKit enforces this.
@@ -96,7 +96,7 @@ src/lib/components/Heatmap.svelte
 The repo already contains `docs/` and `.git`. Scaffold without wiping them:
 
 ```bash
-cd /Users/chenanigans/Hosted/learn-japanese
+cd ~/Hosted/learn-japanese
 npx sv create . --template minimal --types ts --no-add-ons --install npm
 ```
 
@@ -3200,7 +3200,7 @@ git commit -m "feat: add stats page with streak, retention and heatmap"
 
 - [ ] **Step 1: Write the Dockerfile**
 
-`Dockerfile` — three stages, mirroring `chenaners-creative`. `better-sqlite3` is a native module, so the deps stage needs a toolchain; the run stage reuses the built `node_modules` rather than recompiling:
+`Dockerfile` — three stages, mirroring `sibling-app`. `better-sqlite3` is a native module, so the deps stage needs a toolchain; the run stage reuses the built `node_modules` rather than recompiling:
 
 ```dockerfile
 FROM node:22-slim AS deps
@@ -3297,11 +3297,11 @@ Reload the page. Expected: still signed in (the session cookie resolves against 
 6. **nginx** — the host block below.
 7. **Content** — curriculum content lives in `src/lib/server/seed/`; it loads on first boot only, so changing it after launch requires a manual migration (documented as a known limitation, see Step 8).
 
-The nginx server block for the host (place in `/etc/nginx/sites-available/learn.chenaners.com`, symlink into `sites-enabled`, then `certbot --nginx -d learn.chenaners.com`):
+The nginx server block for the host (place in `/etc/nginx/sites-available/<app-hostname>`, symlink into `sites-enabled`, then `certbot --nginx -d <app-hostname>`):
 
 ```nginx
 server {
-    server_name learn.chenaners.com;
+    server_name <app-hostname>;
 
     location / {
         proxy_pass http://127.0.0.1:3001;
@@ -3318,19 +3318,19 @@ server {
 }
 ```
 
-`X-Forwarded-Proto` matters: without it SvelteKit sees the request as HTTP and `secure` cookies get dropped. If the deployment sits behind more than one proxy hop, also set `ORIGIN=https://learn.chenaners.com` in `.env` so SvelteKit's CSRF origin check passes.
+`X-Forwarded-Proto` matters: without it SvelteKit sees the request as HTTP and `secure` cookies get dropped. If the deployment sits behind more than one proxy hop, also set `ORIGIN=https://<app-hostname>` in `.env` so SvelteKit's CSRF origin check passes.
 
 - [ ] **Step 7: Deploy**
 
 ```bash
 scp -r . <host>:/path/to/learn-japanese   # or git pull on the host
 ssh <host> 'cd /path/to/learn-japanese && docker compose up -d --build'
-sudo ln -s /etc/nginx/sites-available/learn.chenaners.com /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/<app-hostname> /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d learn.chenaners.com
+sudo certbot --nginx -d <app-hostname>
 ```
 
-Verify: `https://learn.chenaners.com` redirects to `/login`, signup works, the session cookie shows `Secure`, and studying a card persists across a page reload.
+Verify: `https://<app-hostname>` redirects to `/login`, signup works, the session cookie shows `Secure`, and studying a card persists across a page reload.
 
 - [ ] **Step 8: Record the known limitation**
 
