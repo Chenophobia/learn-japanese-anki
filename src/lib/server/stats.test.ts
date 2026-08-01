@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createTestDb } from './db/test-db';
 import { users, chapters, units, cards, userCards, reviewLogs } from './db/schema';
 import { userStats } from './stats';
+import { HEATMAP_WINDOW_DAYS, heatmapRange } from '$lib/heatmap';
 
 const NOW = new Date('2026-03-10T09:00:00.000Z');
 
@@ -124,7 +125,6 @@ describe('userStats', () => {
 
   it('resolves a streak longer than the heatmap window', () => {
     const { db, userId, ids } = fixture();
-    const HEATMAP_WINDOW_DAYS = 53 * 7; // matches Heatmap.svelte's 53-week grid
     const totalDays = HEATMAP_WINDOW_DAYS + 5; // deliberately > the reviewsByDay window
     for (let i = 0; i < totalDays; i++) {
       const day = new Date(NOW);
@@ -135,7 +135,35 @@ describe('userStats', () => {
     const stats = userStats(db, userId, NOW);
     expect(stats.streak).toBe(totalDays);
     // The heatmap window itself must still stay bounded — only the streak
-    // resolution goes unbounded.
+    // resolution goes unbounded. The window runs to the Saturday on/after
+    // today, so the days it can actually hold reviews for are the ones from
+    // its start up to today.
+    const pastDays =
+      (Date.parse(NOW.toISOString().slice(0, 10)) - Date.parse(heatmapRange(NOW).start)) /
+        86_400_000 +
+      1;
+    expect(stats.reviewsByDay.length).toBe(pastDays);
+    expect(pastDays).toBeLessThanOrEqual(HEATMAP_WINDOW_DAYS);
+  });
+
+  it('still resolves a long streak on a Saturday, when the window has no future columns', () => {
+    // NOW is a fixed weekday; on a Saturday the grid ends on today itself, so
+    // pastDaysInWindow equals the full window. The ceiling check has to fire
+    // in both cases, not just the one the other test happens to cover.
+    const saturday = new Date(Date.UTC(2026, 6, 25, 12, 0, 0));
+    expect(saturday.getUTCDay()).toBe(6);
+
+    const { db, userId, ids } = fixture();
+    const totalDays = HEATMAP_WINDOW_DAYS + 5;
+    for (let i = 0; i < totalDays; i++) {
+      const day = new Date(saturday);
+      day.setUTCDate(day.getUTCDate() - i);
+      const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 8, 0, 0));
+      log(db, userId, ids[i % ids.length], 3, at.toISOString());
+    }
+
+    const stats = userStats(db, userId, saturday);
+    expect(stats.streak).toBe(totalDays);
     expect(stats.reviewsByDay.length).toBe(HEATMAP_WINDOW_DAYS);
   });
 });

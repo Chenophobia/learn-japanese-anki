@@ -3,6 +3,7 @@ import type { Db } from './db/connect';
 import { userCards, reviewLogs } from './db/schema';
 import { MATURE_STABILITY_DAYS, REVIEW_STATE } from './progress';
 import { utcDayStart } from './utc-day';
+import { heatmapRange } from '$lib/heatmap';
 
 export type Stats = {
   learned: number; // user_cards rows (cards introduced)
@@ -12,15 +13,9 @@ export type Stats = {
   retention: number | null; // share of Review-state reviews rated >= Hard; null with no data
   dueToday: number;
   dueTomorrow: number;
-  reviewsByDay: Array<{ date: string; count: number }>; // last HEATMAP_WINDOW_DAYS days, only non-zero days
+  reviewsByDay: Array<{ date: string; count: number }>; // the heatmap grid's date range, only non-zero days
 };
 
-// Matches Heatmap.svelte's grid exactly: WEEKS (53) * 7 days. The grid
-// always renders a fixed 53x7 block, so the query must fetch that whole
-// range — fetching fewer days than the grid draws left up to 6 leftmost
-// columns rendering as "0 reviews" for days that were never queried
-// (Finding 6 of the final branch review).
-const HEATMAP_WINDOW_DAYS = 53 * 7;
 
 /** `YYYY-MM-DD` for the UTC calendar day containing `date`. */
 function isoDay(date: Date): string {
@@ -73,6 +68,14 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
     .where(eq(userCards.userId, userId))
     .all();
 
+  const window = heatmapRange(now);
+  // How many days of the window are in the past. The grid runs to the
+  // Saturday on/after today, so between 0 and 6 of its columns are future
+  // days that can never hold a review — the windowed streak therefore tops
+  // out below HEATMAP_WINDOW_DAYS, and that is the real ceiling below.
+  const pastDaysInWindow =
+    (Date.parse(isoDay(now)) - Date.parse(window.start)) / 86_400_000 + 1;
+
   const dayCol = sql<string>`substr(${reviewLogs.reviewedAt}, 1, 10)`;
   const byDay = db
     .select({ date: dayCol, count: sql<number>`count(*)` })
@@ -80,7 +83,10 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
     .where(
       and(
         eq(reviewLogs.userId, userId),
-        gte(reviewLogs.reviewedAt, utcDayStart(now, -(HEATMAP_WINDOW_DAYS - 1)).toISOString())
+        // Anchored on the grid's own start, not on today: the grid ends on
+        // the Saturday on/after today, so a window measured back from today
+        // would reach 1-6 days further left than any cell it draws.
+        gte(reviewLogs.reviewedAt, `${window.start}T00:00:00.000Z`)
       )
     )
     .groupBy(dayCol)
@@ -88,13 +94,13 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
     .all();
 
   let streak = computeStreak(new Set(byDay.map((d) => d.date)), now);
-  // The windowed streak can only ever report up to HEATMAP_WINDOW_DAYS, since
+  // The windowed streak can only ever report up to `pastDaysInWindow`, since
   // that's all the data `byDay` has. Hitting that ceiling doesn't mean the
   // streak IS exactly that long — it means it might continue further back
   // than the window, so resolve the true value with one extra unbounded
   // query. This keeps the common case at the cheap windowed cost and only
   // pays for a full history scan in the rare case that actually needs it.
-  if (streak >= HEATMAP_WINDOW_DAYS) {
+  if (streak >= pastDaysInWindow) {
     streak = computeStreak(allActivityDays(db, userId, dayCol), now);
   }
 

@@ -19,9 +19,11 @@
    * themes separately, since dark mode flips the anchor (near-surface here
    * is the darkest step, not the lightest).
    */
+  import { HEATMAP_WEEKS, heatmapRange } from '$lib/heatmap';
+
   let { days }: { days: Array<{ date: string; count: number }> } = $props();
 
-  const WEEKS = 53;
+  const WEEKS = HEATMAP_WEEKS;
   const MONTH_NAMES = [
     'Jan',
     'Feb',
@@ -42,8 +44,6 @@
   type Cell = { key: string; count: number; month: number };
 
   const counts = $derived(new Map(days.map((d) => [d.date, d.count])));
-  const totalReviews = $derived(days.reduce((sum, d) => sum + d.count, 0));
-  const activeDays = $derived(days.length);
   const max = $derived(Math.max(1, ...days.map((d) => d.count)));
 
   function isoOf(date: Date): string {
@@ -57,15 +57,6 @@
     return `${MONTH_NAMES[m - 1]} ${d}, ${y}`;
   }
 
-  // The most recent Saturday on/after today (UTC) — the grid always ends on
-  // a complete week that contains today.
-  function endOfGrid(): Date {
-    const now = new Date();
-    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    end.setUTCDate(end.getUTCDate() + (6 - end.getUTCDay()));
-    return end;
-  }
-
   function level(count: number): 0 | 1 | 2 | 3 | 4 {
     if (count === 0) return 0;
     const ratio = count / max;
@@ -75,7 +66,8 @@
     return 1;
   }
 
-  const end = endOfGrid();
+  const range = heatmapRange(new Date());
+  const end = range.endDate;
   const todayKey = isoOf(new Date());
 
   const weeks: Cell[][] = $derived(
@@ -100,6 +92,15 @@
     })
   );
 
+  // stats.ts already queries exactly `range`, so this normally filters
+  // nothing. It keeps the component self-consistent for any input: the
+  // screen-reader list must never announce a day the grid doesn't draw.
+  const visibleDays = $derived(
+    days.filter((d) => d.date >= range.start && d.date <= range.end)
+  );
+  const totalReviews = $derived(visibleDays.reduce((sum, d) => sum + d.count, 0));
+  const activeDays = $derived(visibleDays.length);
+
   let scrollEl: HTMLDivElement | undefined = $state();
   $effect(() => {
     scrollEl?.scrollTo({ left: scrollEl.scrollWidth });
@@ -113,16 +114,17 @@
     attributes, which never reach assistive tech inside a hidden subtree —
     so screen-reader/keyboard users get this instead: a real total, plus
     one line per ACTIVE day (never 365 rows of "0 reviews" noise, since
-    `days` already only contains non-zero counts).
+    `days` already only contains non-zero counts), restricted to the same
+    date range the grid draws.
   -->
   <p class="sr-only">
     Review activity heatmap: {totalReviews}
     {totalReviews === 1 ? 'review' : 'reviews'} across {activeDays} active {activeDays === 1 ? 'day' : 'days'} in the
     last year.
   </p>
-  {#if days.length > 0}
+  {#if visibleDays.length > 0}
     <ul class="sr-only">
-      {#each days as d (d.date)}
+      {#each visibleDays as d (d.date)}
         <li>{formatDay(d.date)}: {d.count} {d.count === 1 ? 'review' : 'reviews'}</li>
       {/each}
     </ul>
