@@ -17,6 +17,37 @@ function isoDay(date: Date): string {
 }
 
 /**
+ * A month label sits in an 11px column but renders roughly 20px wide, so it
+ * overflows into its neighbours and needs about three columns of room.
+ */
+export const MIN_LABEL_COLUMNS = 3;
+
+/**
+ * Picks which week-columns get a month label, given each column's month.
+ *
+ * A column is labelled when it starts a new month AND the next month starts
+ * far enough after it. Dropping the crowded ones is what stops "Jul" and
+ * "Aug" rendering on top of each other: column 0 always counts as a month
+ * start, so a grid opening on the last days of a month would otherwise put a
+ * near-invisible partial month right next to the real one. The same rule at
+ * the right edge keeps a trailing label from overflowing past the last column
+ * and being clipped by the scroll container.
+ */
+export function monthLabelColumns(monthByColumn: number[]): boolean[] {
+  const starts = monthByColumn.reduce<number[]>((acc, month, i) => {
+    if (i === 0 || monthByColumn[i - 1] !== month) acc.push(i);
+    return acc;
+  }, []);
+
+  const labelled: boolean[] = Array(monthByColumn.length).fill(false);
+  starts.forEach((column, i) => {
+    const next = starts[i + 1] ?? monthByColumn.length;
+    if (next - column >= MIN_LABEL_COLUMNS) labelled[column] = true;
+  });
+  return labelled;
+}
+
+/**
  * The inclusive UTC date range the grid draws: a whole number of weeks
  * ending on the Saturday on/after today, so the final column is a complete
  * week containing today.

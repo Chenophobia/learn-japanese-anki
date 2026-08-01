@@ -19,7 +19,7 @@
    * themes separately, since dark mode flips the anchor (near-surface here
    * is the darkest step, not the lightest).
    */
-  import { HEATMAP_WEEKS, heatmapRange } from '$lib/heatmap';
+  import { HEATMAP_WEEKS, heatmapRange, monthLabelColumns } from '$lib/heatmap';
 
   let { days }: { days: Array<{ date: string; count: number }> } = $props();
 
@@ -82,15 +82,12 @@
     )
   );
 
-  // One label per week-column, shown only when that column starts a new
-  // month relative to the previous column — never repeated.
-  const monthLabels = $derived(
-    weeks.map((week, i) => {
-      const month = week[0].month;
-      if (i > 0 && weeks[i - 1][0].month === month) return '';
-      return MONTH_NAMES[month];
-    })
-  );
+  // One label per week-column, shown only when that column starts a new month
+  // and has room before the next one — see monthLabelColumns.
+  const monthLabels = $derived.by(() => {
+    const months = weeks.map((week) => week[0].month);
+    return monthLabelColumns(months).map((show, i) => (show ? MONTH_NAMES[months[i]] : ''));
+  });
 
   // stats.ts already queries exactly `range`, so this normally filters
   // nothing. It keeps the component self-consistent for any input: the
@@ -130,8 +127,17 @@
     </ul>
   {/if}
 
-  <div bind:this={scrollEl} class="overflow-x-auto pb-1" aria-hidden="true">
-    <div class="flex w-max gap-1.5">
+  <!--
+    Padding goes on the inner content, not on this scroll container: Safari
+    ignores a scroll container's padding-right when computing scrollWidth, so
+    the last column would still end up flush against the clipping edge.
+    Setting overflow-x also makes overflow-y compute to `auto`, so the today
+    cell's 2px ring needs clearance on all four sides, not just the right.
+    The extra room on the right also lets the final month label overflow its
+    11px column without being cut off.
+  -->
+  <div bind:this={scrollEl} class="overflow-x-auto" aria-hidden="true">
+    <div class="flex w-max gap-1.5 py-1 pr-3 pl-1">
       <div
         class="grid grid-rows-7 gap-[3px] text-right text-[10px] leading-none text-ink-muted"
         style="grid-auto-rows: 11px; margin-top: 16px"

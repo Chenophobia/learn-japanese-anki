@@ -17,18 +17,28 @@
     <nav class="mx-auto flex w-full max-w-3xl items-center gap-1 p-2 sm:gap-2 sm:p-4" aria-label="Primary">
       {#each links as link}
         {@const isActive = page.url.pathname === link.href}
+        <!--
+          The active indicator is an absolutely positioned bar, not a
+          `border-b-2`. A bottom border on a `rounded-md` box is painted along
+          the rounded path, so its colour arcs up the left and right corners
+          by the full border radius. Safari on iOS/iPadOS antialiases those
+          arcs heavily, which reads as the highlight bleeding up the sides of
+          the tab. A separate bar has no corners to follow.
+        -->
         <a
           href={link.href}
           aria-current={isActive ? 'page' : undefined}
-          class="rounded-md border-b-2 px-2.5 py-2 text-sm transition-colors hover:bg-black/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:hover:bg-white/10 sm:px-3"
-          class:border-accent={isActive}
-          class:border-transparent={!isActive}
-          class:text-ink={isActive}
-          class:text-ink-muted={!isActive}
-          class:font-semibold={isActive}
-          class:font-medium={!isActive}
+          class="relative rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-black/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:px-3 dark:hover:bg-white/10 {isActive
+            ? 'font-semibold text-ink'
+            : 'font-medium text-ink-muted'}"
         >
           {link.label}
+          {#if isActive}
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute inset-x-1.5 bottom-0.5 h-0.5 rounded-full bg-accent"
+            ></span>
+          {/if}
         </a>
       {/each}
 
