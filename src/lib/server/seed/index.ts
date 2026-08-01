@@ -7,7 +7,7 @@ import { grammarChapter } from './grammar';
 
 const kanjiVocabChapter: SeedChapter = {
   title: 'Kanji & Vocabulary',
-  kind: 'kanji_vocab',
+  kind: 'vocab',
   units: [...kanjiUnits, ...vocabUnits]
 };
 
