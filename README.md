@@ -21,6 +21,9 @@ the operator creates every account (see "Creating users" below).
 npm install
 npm run dev          # start the dev server
 npm test             # run the test suite (vitest)
+npm run lint         # prettier --check + eslint (what CI runs)
+npm run format       # rewrite files with prettier
+npm run check        # svelte-check (typechecking)
 npm run db:generate  # regenerate drizzle migrations after editing schema.ts
 ```
 
@@ -29,13 +32,43 @@ As a side effect of the build, the code in `src/lib/server/db/index.ts` opens
 (and seeds) `./data/app.db` locally — this is expected in dev and is not
 carried into the Docker image (see "Deployment" below).
 
+## CI, code quality, and automated maintenance
+
+Every push and PR runs the `CI` workflow (`.github/workflows/ci.yml`):
+Prettier, ESLint, svelte-check, the vitest suite, and a production build;
+when all of that passes on `main`, the same run builds the `linux/arm64`
+Docker image and pushes it to
+`ghcr.io/chenophobia/learn-japanese-anki:latest`, which the deployment host
+polls (see "Continuous deployment" below). PRs build the image without
+pushing, so a broken Dockerfile fails the PR, not the deploy.
+
+Around that core:
+
+- **CodeQL** (`.github/workflows/codeql.yml`) scans for security issues on
+  every push/PR and weekly.
+- **Dependabot** (`.github/dependabot.yml`) opens weekly PRs for npm
+  packages (minor/patch bumps grouped into one PR), GitHub Actions, and the
+  Dockerfile base image.
+- **Auto-merge** (`.github/workflows/dependabot-auto-merge.yml`) flags
+  Dependabot's minor/patch PRs to merge automatically **once CI passes**.
+  If CI fails, nothing merges and nothing deploys — the PR just stays open
+  for a human. Major version bumps always wait for manual review. This
+  relies on two repo settings: "Allow auto-merge" and a branch ruleset
+  making the CI checks required on `main`.
+
+The lint gate is `npm run lint` — Prettier (`.prettierrc`) plus ESLint's
+recommended JS/TS/Svelte rule sets (`eslint.config.js`). Rules that don't
+fit this app (`no-navigation-without-resolve` — there is no `paths.base`)
+are switched off in the config with a comment saying why; one-off intentional
+violations carry inline `eslint-disable` comments with the rationale.
+
 ## Environment variables
 
 Set these in a `.env` file (copy `.env.example` to start):
 
-| Variable         | Purpose                                                                                                                                 |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATA_DIR`       | Directory holding `app.db`. In Docker this is `/app/data`, bind-mounted from `./data` on the host.                                         |
+| Variable         | Purpose                                                                                                                                                                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATA_DIR`       | Directory holding `app.db`. In Docker this is `/app/data`, bind-mounted from `./data` on the host.                                                                                                                                                                                    |
 | `SESSION_SECRET` | Reserved, **not currently read** by the app. Session ids are 32-byte CSPRNG tokens looked up server-side and are not HMAC-signed, so there is nothing to sign with a secret. Left in `.env.example` as a placeholder in case a future change needs it; safe to leave as-is or delete. |
 
 ## Deployment
@@ -83,6 +116,44 @@ docker compose up -d           # start again without rebuilding
 
 Typical workflow: iterate with `npm run dev` → run `npm test` → deploy with
 `docker compose up -d --build`.
+
+### Continuous deployment (pull-based)
+
+The hands-off alternative to building on the host: CI publishes
+`ghcr.io/chenophobia/learn-japanese-anki:latest` on every green `main`
+build, and a launchd agent on this Mac runs `deploy/update.sh` every 5
+minutes — it pulls, and restarts the container only when the image actually
+changed. No inbound access to the Mac, no self-hosted runner (GitHub warns
+against those on public repos: any exposed secret or runner compromise is a
+path onto the host).
+
+The pieces, all under `deploy/`:
+
+- `compose.yml` — same container, ports, `.env`, and `../data` bind mount as
+  the root compose file, but `image:` from GHCR instead of `build: .`.
+- `update.sh` — pull + `up -d` + prune, logging only actual deploys to
+  `deploy/update.log`.
+- `com.chenophobia.learn-japanese.update.plist` — launchd agent running the
+  script every 5 minutes (install instructions in the file's comment).
+
+One-time cutover from the build-on-host container:
+
+```bash
+docker compose down                        # stop the locally-built container (data survives in ./data)
+docker compose -f deploy/compose.yml up -d # start from the GHCR image
+cp deploy/com.chenophobia.learn-japanese.update.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.chenophobia.learn-japanese.update.plist
+```
+
+This requires the GHCR package to be pullable from the host: either set the
+`learn-japanese-anki` package to **public** on GitHub (Packages → package
+settings → Change visibility) after the first CI push, or `docker login
+ghcr.io` on the host with a read-only `read:packages` token.
+
+To roll back a bad deploy: unload the agent (`launchctl bootout ...`), then
+`docker compose -f deploy/compose.yml up -d` a previous `sha-*` tag by
+editing `image:` in `deploy/compose.yml`, or fall back to
+`docker compose up -d --build` from a known-good checkout.
 
 ### Creating users
 
@@ -173,7 +244,7 @@ docker compose run --rm -e RESEED_CONFIRM=yes app npm run reseed
 docker compose start
 ```
 
-Without `RESEED_CONFIRM=yes` the script prints what it *would* destroy and
+Without `RESEED_CONFIRM=yes` the script prints what it _would_ destroy and
 exits 1, which is the safe way to check the row counts first.
 
 ### Backups
@@ -302,18 +373,18 @@ it, but it is **not live yet**. Going live needs this checklist, in order:
 
 - [ ] Reload host nginx to pick up the new server block — this is Homebrew
       nginx on the host, **not** `docker exec`:
-      ```bash
-      nginx -t && nginx -s reload
-      ```
+      `bash
+nginx -t && nginx -s reload
+`
 - [ ] Add an ingress rule for `learn.chenaners.com` to
       `~/.cloudflared/config.yml`, pointing at `http://localhost:8089`,
       **above** the catch-all `- service: http_status:404` entry —
       cloudflared matches ingress rules in order and the catch-all swallows
       anything listed after it.
 - [ ] Create the DNS route:
-      ```bash
-      cloudflared tunnel route dns c1034261-b58e-4617-9a78-071118577f1e learn.chenaners.com
-      ```
+      `bash
+cloudflared tunnel route dns c1034261-b58e-4617-9a78-071118577f1e learn.chenaners.com
+`
 - [ ] Restart the tunnel so it picks up the new config. This briefly
       interrupts `chenaners.com` too, since both hostnames share the one
       `cloudflared` process.
@@ -334,7 +405,7 @@ SvelteKit's CSRF origin check passes.
 
 Secure cookies already work fine, and always would have: the browser's
 connection to Cloudflare is HTTPS, and the `Secure` cookie attribute is
-enforced by the browser against its *own* connection scheme — the plaintext
+enforced by the browser against its _own_ connection scheme — the plaintext
 hops behind Cloudflare are invisible to it. There is no TLS gap blocking
 login; the only remaining work is the checklist above to route
 `learn.chenaners.com` to this app at all.
