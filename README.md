@@ -61,10 +61,10 @@ docker compose logs -f app
 ```
 
 This builds the image (see `Dockerfile`), starts the container, and publishes
-it on `127.0.0.1:3001` — bound to localhost only, since nginx (itself a
-container) reverse-proxies to it rather than the app being exposed directly
-(see the nginx section below; note that section also explains why there's no
-TLS yet).
+it on `127.0.0.1:3001` — bound to localhost only, since a host-level nginx
+reverse-proxies to it rather than the app being exposed directly (see the
+"Reverse proxy and TLS" section below, which also covers where TLS is
+actually terminated).
 
 The app listens on `0.0.0.0:3001` inside the container. All persistent state
 is the single SQLite file at `./data/app.db` on the host (bind-mounted to
@@ -104,93 +104,127 @@ already exist before the first `docker compose up` and Compose created it.
 If so, the backup/restore commands above need `sudo` to read or write those
 files as a non-root operator.
 
-### nginx (containerized)
+### Reverse proxy and TLS
 
-nginx is **not** installed on the host — it runs as a container named
-`nginx-proxy` (image `nginx:alpine`), defined in
-`~/Documents/nginx/docker-compose.yml` and attached to a `proxy-net` Docker
-network. Site configs aren't a single host file edited in place; they're
-individual `.conf` files dropped into `~/Documents/nginx/conf.d/`, which is
-bind-mounted into the container at `/etc/nginx/conf.d`. Certificates go in
-`~/Documents/nginx/certs`, bind-mounted to `/etc/nginx/certs`.
+The real request path to this app is:
 
-Because nginx runs in its own container, `proxy_pass http://127.0.0.1:3001;`
-inside that config would point at the nginx container itself, not this app —
-`127.0.0.1` there means "the nginx container's own network namespace." This
-app publishes to `127.0.0.1:3001` **on the host**, and on Docker Desktop for
-Mac a container reaches the host through the special hostname
-`host.docker.internal`. So the proxied config uses:
+```
+Browser --HTTPS--> Cloudflare edge --Cloudflare Tunnel--> cloudflared (on this Mac)
+       --> 127.0.0.1:8089 (Homebrew nginx on the HOST) --> 127.0.0.1:3001 (Docker app)
+```
+
+**TLS is terminated by Cloudflare at the edge.** The origin (this Mac) never
+holds a certificate and doesn't need one. Everything downstream of
+Cloudflare — the tunnel hop into `cloudflared` and the proxy hop from
+`cloudflared` into nginx — is plain HTTP over localhost, which is fine
+because none of it leaves the machine.
+
+`cloudflared` runs as a Homebrew service on the host (not a container):
+
+```
+/opt/homebrew/opt/cloudflared/bin/cloudflared tunnel --config /Users/chenanigans/.cloudflared/config.yml --no-autoupdate run
+```
+
+Its config (`~/.cloudflared/config.yml`) maps hostnames to local ports via
+`ingress` rules, matched top-to-bottom with a catch-all 404 at the end:
+
+```yaml
+tunnel: c1034261-b58e-4617-9a78-071118577f1e
+credentials-file: /Users/chenanigans/.cloudflared/c1034261-b58e-4617-9a78-071118577f1e.json
+ingress:
+  - hostname: chenaners.com
+    service: http://localhost:8088
+  - hostname: www.chenaners.com
+    service: http://localhost:8088
+  - service: http_status:404
+```
+
+The reverse proxy itself is **Homebrew nginx running on the host** — not a
+container — with site configs in `/opt/homebrew/etc/nginx/servers/`. The
+existing `chenaners.conf` there listens on `127.0.0.1:8088`. This app gets
+its own file, `/opt/homebrew/etc/nginx/servers/learn-japanese.conf`,
+listening on `127.0.0.1:8089` instead (8088 is already taken by
+`chenaners.conf`) and proxying to the app container:
 
 ```nginx
 server {
+    listen 127.0.0.1:8089;
     server_name learn.chenaners.com;
 
     location / {
-        proxy_pass http://host.docker.internal:3001;
+        proxy_pass http://127.0.0.1:3001;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+        proxy_read_timeout 120s;
     }
-
-    listen 80;
 }
 ```
 
-A ready-to-use version of this lives at
-`~/Documents/nginx/conf.d/learn-japanese.conf.disabled` (following the
-pattern of the `example-app.conf.disabled` template). To activate it, drop
-the `.disabled` suffix so it lands in `conf.d` as a real `.conf` file, then
-test and reload the running container — no host nginx package, no
-`systemctl`, no `sites-enabled` symlink:
+Both `127.0.0.1:8088` and `127.0.0.1:8089` are bound to localhost only —
+never exposed publicly. Public traffic only ever reaches them via the
+Cloudflare Tunnel.
 
-```bash
-mv ~/Documents/nginx/conf.d/learn-japanese.conf.disabled ~/Documents/nginx/conf.d/learn-japanese.conf
-docker exec nginx-proxy nginx -t && docker exec nginx-proxy nginx -s reload
-```
+This config file already exists on the host and `nginx -t` passes against
+it, but it is **not live yet**. Going live needs this checklist, in order:
 
-**There is currently no TLS.** The `certs/` directory is empty and no config
-in `conf.d` listens on 443 — this note is not aspirational, it's the actual
-current state. This matters more than it might look, because it actively
-blocks login: `cookies.set` in `src/routes/login/+page.server.ts:27` and
-`src/routes/signup/+page.server.ts:39` sets the session cookie with
-`secure: true` whenever `NODE_ENV=production`, and a browser will silently
-refuse to store a `Secure` cookie delivered over plain `http://`. Concretely:
-until a certificate is issued and a `listen 443 ssl` block is added to the
-`conf.d` config (with the cert/key paths under `~/Documents/nginx/certs`),
-visiting `http://learn.chenaners.com` will let you submit the login form but
-the session cookie will never be set, so the app will bounce you right back
-to `/login`. **TLS must be configured before login works over
-`learn.chenaners.com`.** In the meantime, the app is fully reachable for
-testing directly at `http://127.0.0.1:3001` — `localhost`/`127.0.0.1` are
-exempted from the `Secure` requirement, so login works there today. How the
-certificate itself gets issued (certbot, another ACME client, manual) isn't
-prescribed here; whatever tool is used, the resulting cert and key just need
-to end up under `~/Documents/nginx/certs`, referenced from the `conf.d`
-config's `ssl_certificate`/`ssl_certificate_key` directives.
+- [ ] Reload host nginx to pick up the new server block — this is Homebrew
+      nginx on the host, **not** `docker exec`:
+      ```bash
+      nginx -t && nginx -s reload
+      ```
+- [ ] Add an ingress rule for `learn.chenaners.com` to
+      `~/.cloudflared/config.yml`, pointing at `http://localhost:8089`,
+      **above** the catch-all `- service: http_status:404` entry —
+      cloudflared matches ingress rules in order and the catch-all swallows
+      anything listed after it.
+- [ ] Create the DNS route:
+      ```bash
+      cloudflared tunnel route dns c1034261-b58e-4617-9a78-071118577f1e learn.chenaners.com
+      ```
+- [ ] Restart the tunnel so it picks up the new config. This briefly
+      interrupts `chenaners.com` too, since both hostnames share the one
+      `cloudflared` process.
 
-This app doesn't currently read `X-Forwarded-Proto` — `@sveltejs/adapter-node`
-only consults a forwarded-protocol header when `PROTOCOL_HEADER` is set, and
-nothing here sets it, and SvelteKit's cookie handling already defaults
-`secure` to true for any non-`localhost` host regardless of perceived
-protocol. Forward it anyway: it's standard reverse-proxy practice, it means
-nginx is telling the truth about the original scheme instead of silently
-omitting it, and it means turning on `PROTOCOL_HEADER=x-forwarded-proto`
-later (if some code path ever needs to know the original protocol) requires
-no nginx change. If the deployment ever sits behind more than one proxy hop,
-also set `ORIGIN=https://learn.chenaners.com` in `.env` so SvelteKit's CSRF
-origin check passes.
+`X-Forwarded-Proto` is hardcoded to `https` above rather than passed through
+as `$scheme` because the tunnel-to-nginx hop is plain HTTP — `$scheme` there
+would report `http`, misreporting the browser's actual HTTPS connection to
+Cloudflare. This app doesn't currently read the header anyway —
+`@sveltejs/adapter-node` only consults a forwarded-protocol header when
+`PROTOCOL_HEADER` is set, and nothing here sets it, and SvelteKit's cookie
+handling already defaults `secure` to true for any non-`localhost` host
+regardless of perceived protocol. It's forwarded anyway as standard
+reverse-proxy practice and so that turning on
+`PROTOCOL_HEADER=x-forwarded-proto` later (if some code path ever needs the
+original protocol) is a no-op. If the deployment ever sits behind more than
+one proxy hop, also set `ORIGIN=https://learn.chenaners.com` in `.env` so
+SvelteKit's CSRF origin check passes.
 
-Verify after deploying: for now, since there's no TLS yet, check
-`http://127.0.0.1:3001` directly — it redirects to `/login`, signup works,
-and studying a card persists across a page reload (the session cookie won't
-show `Secure` here, which is expected on `127.0.0.1`). Once TLS is
-configured, re-verify against `https://learn.chenaners.com`: it should
-redirect to `/login`, signup should work, and the session cookie should show
-`Secure`.
+Secure cookies already work fine, and always would have: the browser's
+connection to Cloudflare is HTTPS, and the `Secure` cookie attribute is
+enforced by the browser against its *own* connection scheme — the plaintext
+hops behind Cloudflare are invisible to it. There is no TLS gap blocking
+login; the only remaining work is the checklist above to route
+`learn.chenaners.com` to this app at all.
+
+**The `nginx-proxy` Docker container (defined under `~/Documents/nginx/`) is
+not part of this path.** It publishes port 80 and its `conf.d` holds only a
+`default.conf` returning 404 — nothing routes through it. Don't drop a
+config into `~/Documents/nginx/conf.d/` expecting it to take effect; it
+won't, because the tunnel talks to Homebrew nginx on port 8088/8089, not to
+this container.
+
+Verify after deploying: once the checklist above is complete, check
+`https://learn.chenaners.com` — it should redirect to `/login`, signup
+should work, and studying a card should persist across a page reload, with
+the session cookie showing `Secure`. In the meantime the app remains
+reachable for testing directly at `http://127.0.0.1:3001`
+(`localhost`/`127.0.0.1` are exempt from the `Secure` requirement, so login
+works there today regardless of tunnel/nginx state).
 
 ## Content
 
