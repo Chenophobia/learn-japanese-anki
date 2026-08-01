@@ -118,18 +118,18 @@
           >
             <span class="relative flex w-5 shrink-0 items-center justify-center self-stretch">
               {#if j > 0}
-                <span class="absolute top-0 left-1/2 h-1/2 w-px -translate-x-1/2 {connector(topActive)}"
+                <span class="absolute top-0 left-1/2 h-1/2 w-px -translate-x-1/2 path-line {connector(topActive)}"
                 ></span>
               {/if}
               {#if j < chapter.units.length - 1}
                 <span
-                  class="absolute bottom-0 left-1/2 h-1/2 w-px -translate-x-1/2 {connector(bottomActive)}"
+                  class="absolute bottom-0 left-1/2 h-1/2 w-px -translate-x-1/2 path-line {connector(bottomActive)}"
                 ></span>
               {/if}
               {#if unit.status === 'done'}
                 <span class="relative z-10 h-2.5 w-2.5 rounded-full bg-ink-muted/60"></span>
               {:else if unit.status === 'current'}
-                <span class="relative z-10 h-3 w-3 rounded-full bg-accent ring-4 ring-accent/20"></span>
+                <span class="path-dot-current relative z-10 h-3 w-3 rounded-full bg-accent"></span>
               {:else}
                 <span class="relative z-10 h-2 w-2 rounded-full border border-hairline bg-surface"></span>
               {/if}

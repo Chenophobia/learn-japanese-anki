@@ -93,6 +93,41 @@
   }
 }
 
+/*
+ * Course-map path. The connector line between units draws downward on load,
+ * and the current unit's dot breathes so the eye lands on where to resume.
+ *
+ * scaleY from a top origin animates the compositor's transform rather than
+ * layout, so a 50-unit map does not reflow 100 connector spans.
+ */
+@keyframes draw-down {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-accent) 20%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--color-accent) 8%, transparent);
+  }
+}
+
+.path-line {
+  transform-origin: top;
+  animation: draw-down 400ms ease-out both;
+}
+
+.path-dot-current {
+  animation: breathe 2.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
