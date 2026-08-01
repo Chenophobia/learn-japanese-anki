@@ -1,8 +1,10 @@
 # Curriculum plan — content roadmap for the app
 
+> **Note (post-restructure):** this doc predates the curriculum restructure and still describes the original 4-chapter shape below as if it shipped that way. It didn't: the app now has **11 chapters across 4 tracks** — Alphabet (Hiragana, Katakana), Kanji (Basic Kanji), Vocabulary (Everyday Life; People, Places & Work; Describing & Feeling; Toward N4), Grammar (Linking Actions; Intention & Attempt; Thoughts, Guessing & Conditions; Advanced Verb Forms). The content inventory below (kana lists, kanji sets, vocab words, grammar patterns) is still accurate as *source material* — it's only the chapter/track grouping that's stale. For the authoritative current grouping, see `src/lib/server/seed/index.ts` (`CHAPTER_SPECS`), which throws at seed time if a unit title is unknown, claimed twice, or unclaimed, so it can't drift from what's actually loaded.
+
 Source: `Japanese_N4_Full_Course.pdf` (52-week self-study course, 3 phases, targets JLPT N4). This doc extracts every deck/card-worthy piece of content from that PDF and remaps it into **app chapters**, with hiragana and katakana pulled forward as Chapter 1 and 2 (the PDF already teaches them first as "Phase 1, Weeks 1–7" — we're just renaming/reorganizing the container, not changing the pedagogical order).
 
-This is the seed-data roadmap. Nothing here is code yet — it's what the decks/cards need to contain before we design the schema.
+This is the seed-data roadmap. Nothing here is code yet — it's what the decks/cards need to contain before we design the schema. The chapter map immediately below reflects the *original* 4-chapter proposal, not the shipped structure — see the note above.
 
 ## Chapter map
 
@@ -170,6 +172,8 @@ Plus a fluency drill sentence (Week 7): スマートフォン、インターネ�
 
 ## Chapter 3 — Kanji & Vocabulary
 
+> As shipped, this content is split across five chapters in two different tracks, not one: the Kanji track's "Basic Kanji" chapter (3a below) and the Vocabulary track's four chapters — Everyday Life, People/Places & Work, Describing & Feeling, and Toward N4 — which regroup the 17 vocab units thematically (3b below). See `src/lib/server/seed/index.ts` for the exact grouping.
+
 ### 3a. Kanji (76 total, in 4 thematic sets of ~19–20)
 
 **Set 1 — Core/most useful (Week 8):**
@@ -319,6 +323,8 @@ Card template for all of these: **Front = Japanese word (with kanji). Back = rea
 ---
 
 ## Chapter 4 — Grammar & Reading
+
+> As shipped, this content forms its own track (Grammar) split into four chapters — Linking Actions, Intention & Attempt, Thoughts/Guessing & Conditions, and Advanced Verb Forms — grouped thematically rather than by week. See `src/lib/server/seed/index.ts` for the exact grouping.
 
 Card template: Front = grammar pattern. Back = meaning + example sentence (+ a second variant pattern where the week covers a pair/triplet, per the pairings below).
 
