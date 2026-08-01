@@ -8,31 +8,82 @@ const NOW = new Date('2026-03-10T09:00:00.000Z');
 
 function fixture() {
   const db = createTestDb();
-  const [user] = db.insert(users).values({ username: 'u', passwordHash: 'x', createdAt: NOW.toISOString() }).returning().all();
-  const [ch] = db.insert(chapters).values({ order: 1, title: 'Ch1', kind: 'kana' }).returning().all();
-  const [unit] = db.insert(units).values({ chapterId: ch.id, order: 1, title: 'U1', kind: 'kana', dailyCap: 5 }).returning().all();
+  const [user] = db
+    .insert(users)
+    .values({ username: 'u', passwordHash: 'x', createdAt: NOW.toISOString() })
+    .returning()
+    .all();
+  const [ch] = db
+    .insert(chapters)
+    .values({ order: 1, title: 'Ch1', kind: 'kana' })
+    .returning()
+    .all();
+  const [unit] = db
+    .insert(units)
+    .values({ chapterId: ch.id, order: 1, title: 'U1', kind: 'kana', dailyCap: 5 })
+    .returning()
+    .all();
   const ids: number[] = [];
   for (let i = 1; i <= 4; i++) {
-    const [card] = db.insert(cards).values({
-      unitId: unit.id, order: i, frontJson: '{"char":"あ"}', backJson: '{"romaji":"a","mnemonic":"m"}'
-    }).returning().all();
+    const [card] = db
+      .insert(cards)
+      .values({
+        unitId: unit.id,
+        order: i,
+        frontJson: '{"char":"あ"}',
+        backJson: '{"romaji":"a","mnemonic":"m"}'
+      })
+      .returning()
+      .all();
     ids.push(card.id);
   }
   return { db, userId: user.id, ids };
 }
 
-function introduce(db: ReturnType<typeof createTestDb>, userId: number, cardId: number, over: Partial<typeof userCards.$inferInsert> = {}) {
-  db.insert(userCards).values({
-    userId, cardId, state: 2, stability: 5, difficulty: 5,
-    due: NOW.toISOString(), scheduledDays: 5, learningSteps: 0, reps: 1, lapses: 0,
-    lastReview: NOW.toISOString(), ...over
-  }).run();
+function introduce(
+  db: ReturnType<typeof createTestDb>,
+  userId: number,
+  cardId: number,
+  over: Partial<typeof userCards.$inferInsert> = {}
+) {
+  db.insert(userCards)
+    .values({
+      userId,
+      cardId,
+      state: 2,
+      stability: 5,
+      difficulty: 5,
+      due: NOW.toISOString(),
+      scheduledDays: 5,
+      learningSteps: 0,
+      reps: 1,
+      lapses: 0,
+      lastReview: NOW.toISOString(),
+      ...over
+    })
+    .run();
 }
 
-function log(db: ReturnType<typeof createTestDb>, userId: number, cardId: number, rating: number, at: string, state = 2) {
-  db.insert(reviewLogs).values({
-    userId, cardId, rating, reviewedAt: at, state, stability: 5, difficulty: 5, scheduledDays: 5
-  }).run();
+function log(
+  db: ReturnType<typeof createTestDb>,
+  userId: number,
+  cardId: number,
+  rating: number,
+  at: string,
+  state = 2
+) {
+  db.insert(reviewLogs)
+    .values({
+      userId,
+      cardId,
+      rating,
+      reviewedAt: at,
+      state,
+      stability: 5,
+      difficulty: 5,
+      scheduledDays: 5
+    })
+    .run();
 }
 
 describe('userStats', () => {
@@ -129,7 +180,9 @@ describe('userStats', () => {
     for (let i = 0; i < totalDays; i++) {
       const day = new Date(NOW);
       day.setUTCDate(day.getUTCDate() - i);
-      const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 8, 0, 0));
+      const at = new Date(
+        Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 8, 0, 0)
+      );
       log(db, userId, ids[i % ids.length], 3, at.toISOString());
     }
     const stats = userStats(db, userId, NOW);
@@ -158,7 +211,9 @@ describe('userStats', () => {
     for (let i = 0; i < totalDays; i++) {
       const day = new Date(saturday);
       day.setUTCDate(day.getUTCDate() - i);
-      const at = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 8, 0, 0));
+      const at = new Date(
+        Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 8, 0, 0)
+      );
       log(db, userId, ids[i % ids.length], 3, at.toISOString());
     }
 

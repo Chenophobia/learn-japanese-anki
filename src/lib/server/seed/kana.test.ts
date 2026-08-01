@@ -27,7 +27,9 @@ describe('kana chapters', () => {
   });
 
   it('every kana card has a non-empty char, romaji and mnemonic', () => {
-    const kanaUnits = [...hiraganaChapter.units, ...katakanaChapter.units].filter((u) => u.kind === 'kana');
+    const kanaUnits = [...hiraganaChapter.units, ...katakanaChapter.units].filter(
+      (u) => u.kind === 'kana'
+    );
     for (const unit of kanaUnits) {
       for (const card of unit.cards) {
         expect((card.front as { char: string }).char).toBeTruthy();

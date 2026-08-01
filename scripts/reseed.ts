@@ -29,7 +29,10 @@ import { chapters, units, cards, userCards, reviewLogs } from '../src/lib/server
 import { seedIfEmpty } from '../src/lib/server/seed/run';
 
 function count(table: SQLiteTable): number {
-  const [row] = db.select({ n: sql<number>`count(*)` }).from(table).all();
+  const [row] = db
+    .select({ n: sql<number>`count(*)` })
+    .from(table)
+    .all();
   return row?.n ?? 0;
 }
 

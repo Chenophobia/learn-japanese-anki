@@ -10,7 +10,10 @@ describe('seedIfEmpty', () => {
     seedIfEmpty(db);
 
     const expectedUnits = curriculum.reduce((n, c) => n + c.units.length, 0);
-    const expectedCards = curriculum.reduce((n, c) => n + c.units.reduce((m, u) => m + u.cards.length, 0), 0);
+    const expectedCards = curriculum.reduce(
+      (n, c) => n + c.units.reduce((m, u) => m + u.cards.length, 0),
+      0
+    );
 
     expect(db.select().from(chapters).all()).toHaveLength(curriculum.length);
     expect(db.select().from(units).all()).toHaveLength(expectedUnits);
@@ -20,10 +23,18 @@ describe('seedIfEmpty', () => {
   it('assigns 1-based order within each parent', () => {
     const db = createTestDb();
     seedIfEmpty(db);
-    expect(db.select().from(chapters).all().map((c) => c.order)).toEqual(
-      curriculum.map((_, i) => i + 1)
-    );
-    const firstChapterUnits = db.select().from(units).all().filter((u) => u.chapterId === 1);
+    expect(
+      db
+        .select()
+        .from(chapters)
+        .all()
+        .map((c) => c.order)
+    ).toEqual(curriculum.map((_, i) => i + 1));
+    const firstChapterUnits = db
+      .select()
+      .from(units)
+      .all()
+      .filter((u) => u.chapterId === 1);
     expect(firstChapterUnits.map((u) => u.order)).toEqual([1, 2, 3, 4, 5]);
   });
 

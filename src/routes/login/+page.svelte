@@ -3,13 +3,13 @@
   let { form } = $props();
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-paper p-6">
+<div class="bg-paper flex min-h-screen items-center justify-center p-6">
   <form
     method="POST"
     use:enhance
-    class="w-full max-w-sm space-y-4 rounded-2xl border border-hairline bg-surface p-6 shadow-sm sm:p-8"
+    class="border-hairline bg-surface w-full max-w-sm space-y-4 rounded-2xl border p-6 shadow-sm sm:p-8"
   >
-    <h1 class="text-2xl font-semibold text-ink">Sign in</h1>
+    <h1 class="text-ink text-2xl font-semibold">Sign in</h1>
 
     {#if form?.error}
       <p
@@ -20,34 +20,34 @@
     {/if}
 
     <label class="block space-y-1">
-      <span class="text-sm font-medium text-ink-muted">Username</span>
+      <span class="text-ink-muted text-sm font-medium">Username</span>
       <input
         name="username"
         value={form?.username ?? ''}
         autocomplete="username"
         required
-        class="w-full rounded-md border border-hairline bg-paper px-3 py-2 text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
+        class="border-hairline bg-paper text-ink placeholder:text-ink-muted focus:border-accent focus:ring-accent w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
       />
     </label>
 
     <label class="block space-y-1">
-      <span class="text-sm font-medium text-ink-muted">Password</span>
+      <span class="text-ink-muted text-sm font-medium">Password</span>
       <input
         name="password"
         type="password"
         autocomplete="current-password"
         required
-        class="w-full rounded-md border border-hairline bg-paper px-3 py-2 text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
+        class="border-hairline bg-paper text-ink placeholder:text-ink-muted focus:border-accent focus:ring-accent w-full rounded-md border px-3 py-2 focus:ring-2 focus:outline-none"
       />
     </label>
 
-    <label class="flex items-center gap-2 text-sm text-ink-muted">
-      <input name="remember" type="checkbox" class="rounded accent-accent" />
+    <label class="text-ink-muted flex items-center gap-2 text-sm">
+      <input name="remember" type="checkbox" class="accent-accent rounded" />
       Keep me signed in on this device
     </label>
 
     <button
-      class="w-full rounded-md bg-ink px-4 py-2 font-medium text-paper transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+      class="bg-ink text-paper focus-visible:ring-accent focus-visible:ring-offset-surface w-full rounded-md px-4 py-2 font-medium transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       Sign in
     </button>

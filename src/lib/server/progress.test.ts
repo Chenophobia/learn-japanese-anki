@@ -9,16 +9,39 @@ const NOW = new Date('2026-03-10T09:00:00.000Z');
 
 function fixture() {
   const db = createTestDb();
-  const [user] = db.insert(users).values({ username: 'u', passwordHash: 'x', createdAt: NOW.toISOString() }).returning().all();
-  const [ch] = db.insert(chapters).values({ order: 1, title: 'Ch1', kind: 'kana' }).returning().all();
-  const [u1] = db.insert(units).values({ chapterId: ch.id, order: 1, title: 'U1', kind: 'kana', dailyCap: 5 }).returning().all();
-  const [u2] = db.insert(units).values({ chapterId: ch.id, order: 2, title: 'U2', kind: 'kana', dailyCap: 5 }).returning().all();
+  const [user] = db
+    .insert(users)
+    .values({ username: 'u', passwordHash: 'x', createdAt: NOW.toISOString() })
+    .returning()
+    .all();
+  const [ch] = db
+    .insert(chapters)
+    .values({ order: 1, title: 'Ch1', kind: 'kana' })
+    .returning()
+    .all();
+  const [u1] = db
+    .insert(units)
+    .values({ chapterId: ch.id, order: 1, title: 'U1', kind: 'kana', dailyCap: 5 })
+    .returning()
+    .all();
+  const [u2] = db
+    .insert(units)
+    .values({ chapterId: ch.id, order: 2, title: 'U2', kind: 'kana', dailyCap: 5 })
+    .returning()
+    .all();
   const made: Record<number, number[]> = { [u1.id]: [], [u2.id]: [] };
   for (const unit of [u1, u2]) {
     for (let i = 1; i <= 2; i++) {
-      const [card] = db.insert(cards).values({
-        unitId: unit.id, order: i, frontJson: '{"char":"あ"}', backJson: '{"romaji":"a","mnemonic":"m"}'
-      }).returning().all();
+      const [card] = db
+        .insert(cards)
+        .values({
+          unitId: unit.id,
+          order: i,
+          frontJson: '{"char":"あ"}',
+          backJson: '{"romaji":"a","mnemonic":"m"}'
+        })
+        .returning()
+        .all();
       made[unit.id].push(card.id);
     }
   }
@@ -64,7 +87,8 @@ describe('chapterProgress', () => {
 
   it('marks every unit done when the curriculum is finished', () => {
     const { db, userId, u1, u2, made } = fixture();
-    for (const id of [...made[u1.id], ...made[u2.id]]) recordReview(db, userId, id, Rating.Good, NOW);
+    for (const id of [...made[u1.id], ...made[u2.id]])
+      recordReview(db, userId, id, Rating.Good, NOW);
     const [chapter] = chapterProgress(db, userId);
     expect(chapter.units.map((u) => u.status)).toEqual(['done', 'done']);
   });

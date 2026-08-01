@@ -27,10 +27,17 @@ describe('curriculum', () => {
     // the tracks are contiguous — otherwise a track's heading repeats.
     const kinds = curriculum.map((c) => c.kind);
     expect(kinds).toEqual([
-      'kana', 'kana',
+      'kana',
+      'kana',
       'kanji',
-      'vocab', 'vocab', 'vocab', 'vocab',
-      'grammar', 'grammar', 'grammar', 'grammar'
+      'vocab',
+      'vocab',
+      'vocab',
+      'vocab',
+      'grammar',
+      'grammar',
+      'grammar',
+      'grammar'
     ]);
 
     const headings = kinds.filter((kind, i) => kind !== kinds[i - 1]);

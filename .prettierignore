@@ -1,0 +1,8 @@
+# Generated or historical artifacts — not style-checked.
+node_modules/
+build/
+.svelte-kit/
+data/
+drizzle/
+package-lock.json
+docs/superpowers/

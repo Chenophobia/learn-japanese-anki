@@ -15,6 +15,9 @@ export type GrammarBack = { meaning: string; example: string };
 export type CardFront = KanaFront | KanjiFront | VocabFront | GrammarFront;
 export type CardBack = KanaBack | KanjiBack | VocabBack | GrammarBack;
 
-export function parseCardFaces(frontJson: string, backJson: string): { front: CardFront; back: CardBack } {
+export function parseCardFaces(
+  frontJson: string,
+  backJson: string
+): { front: CardFront; back: CardBack } {
   return { front: JSON.parse(frontJson), back: JSON.parse(backJson) };
 }
