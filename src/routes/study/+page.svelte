@@ -3,6 +3,7 @@
   import { invalidateAll } from '$app/navigation';
   import type { SubmitFunction } from '@sveltejs/kit';
   import Card from '$lib/components/Card.svelte';
+  import { rating } from '$lib/study-state.svelte';
 
   let { data, form } = $props();
 
@@ -48,6 +49,7 @@
       return;
     }
     submitting = true;
+    rating.inFlight = true;
     return async ({ update, result }) => {
       // use:enhance's built-in `update()` only calls invalidateAll() when
       // result.type === 'success' — never on a fail() response. A mismatch
@@ -60,6 +62,7 @@
         await invalidateAll();
       }
       submitting = false;
+      rating.inFlight = false;
     };
   };
 

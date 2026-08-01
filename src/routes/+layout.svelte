@@ -1,7 +1,10 @@
 <script lang="ts">
   import '../app.css';
   import { page } from '$app/state';
+  import { invalidateAll } from '$app/navigation';
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+  import { shouldRevalidate } from '$lib/revalidate';
+  import { rating } from '$lib/study-state.svelte';
 
   let { data, children } = $props();
 
@@ -10,6 +13,40 @@
     { href: '/study', label: 'Study' },
     { href: '/stats', label: 'Stats' }
   ];
+
+  // Tracks whether the tab has been hidden since the last revalidation.
+  // visibilitychange fires on becoming visible regardless of whether it was
+  // ever hidden, so without this every fire would trigger a refetch.
+  let wasHidden = false;
+
+  $effect(() => {
+    function revalidate(restoredFromBfcache: boolean) {
+      if (!shouldRevalidate({ restoredFromBfcache, wasHidden, ratingInFlight: rating.inFlight })) {
+        return;
+      }
+      wasHidden = false;
+      void invalidateAll();
+    }
+
+    function onPageShow(event: PageTransitionEvent) {
+      revalidate(event.persisted);
+    }
+
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') {
+        wasHidden = true;
+        return;
+      }
+      revalidate(false);
+    }
+
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  });
 </script>
 
 {#if data.user}

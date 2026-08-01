@@ -6,9 +6,14 @@ import { parseCardFaces } from '$lib/cards';
 import { utcDayStart } from '$lib/server/utc-day';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, setHeaders }) => {
   const userId = locals.user!.id; // hooks.server.ts guarantees a user on this route
   const now = new Date();
+  // Per-user content behind a session cookie: never store it. Placed here so
+  // it runs on both the item and no-item return paths below. Without this
+  // there is no explicit directive at all, which leaves staleness to
+  // heuristics.
+  setHeaders({ 'cache-control': 'no-store' });
   const item = nextQueueItem(db, userId, now);
   const counts = queueCounts(db, userId, now);
 
