@@ -4,6 +4,7 @@
   import type { SubmitFunction } from '@sveltejs/kit';
   import { fly } from 'svelte/transition';
   import Card from '$lib/components/Card.svelte';
+  import RollingNumber from '$lib/components/RollingNumber.svelte';
   import { rating } from '$lib/study-state.svelte';
   import { motionDuration, prefersReducedMotion } from '$lib/motion';
 
@@ -112,7 +113,9 @@
         <span class="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">New</span>
       {/if}
     </span>
-    <span class="shrink-0 tabular-nums">{data.counts.due} due · {data.counts.newAvailable} new</span>
+    <span class="shrink-0 tabular-nums">
+      <RollingNumber value={data.counts.due} /> due · <RollingNumber value={data.counts.newAvailable} /> new
+    </span>
   </p>
 
   {#if form?.error}
@@ -158,7 +161,7 @@
             name="rating"
             value={preview.rating}
             disabled={submitting}
-            class="flex flex-col items-center gap-0.5 rounded-lg py-3 font-semibold text-paper transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:opacity-60 {RATING_BG[
+            class="flex flex-col items-center gap-0.5 rounded-lg py-3 font-semibold text-paper transition-[opacity,transform] hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:opacity-60 {RATING_BG[
               preview.rating
             ]}"
           >
@@ -170,7 +173,7 @@
     {:else}
       <button
         onclick={() => (revealed = true)}
-        class="w-full rounded-lg bg-ink py-3.5 text-base font-medium text-paper transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+        class="w-full rounded-lg bg-ink py-3.5 text-base font-medium text-paper transition-[opacity,transform] hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
       >
         Show answer
         <span class="ml-1.5 hidden text-sm opacity-70 sm:inline">(space)</span>

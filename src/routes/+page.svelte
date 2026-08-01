@@ -1,5 +1,6 @@
 <script lang="ts">
   import ProgressBar from '$lib/components/ProgressBar.svelte';
+  import RollingNumber from '$lib/components/RollingNumber.svelte';
   let { data } = $props();
 
   const TRACK_LABELS: Record<string, string> = {
@@ -32,8 +33,8 @@
       {#if courseComplete}
         Every unit is done — nice work.
       {:else}
-        <span class="tabular-nums">{data.counts.due}</span> due now ·
-        <span class="tabular-nums">{data.counts.newAvailable}</span> new available
+        <RollingNumber value={data.counts.due} /> due now ·
+        <RollingNumber value={data.counts.newAvailable} /> new available
       {/if}
     </p>
   </div>
