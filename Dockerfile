@@ -28,5 +28,12 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/package.json ./package.json
+# Not part of the built app itself, but needed at runtime for `npm run
+# create-user` (see scripts/create-user.ts and README's "Creating users"):
+# it runs straight off this TypeScript source via `tsx` (a production
+# dependency, so it survives npm prune above), reusing the app's own
+# db/auth modules rather than a duplicated copy of their logic.
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/src/lib/server ./src/lib/server
 EXPOSE 3001
 CMD ["node", "build/index.js"]

@@ -2,7 +2,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { SESSION_COOKIE, validateSession } from '$lib/server/auth/session';
 
-const PUBLIC_ROUTES = ['/login', '/signup'];
+const PUBLIC_ROUTES = ['/login'];
 
 export const handle: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(SESSION_COOKIE);

@@ -15,7 +15,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"db:generate": "drizzle-kit generate"
+		"db:generate": "drizzle-kit generate",
+		"create-user": "tsx scripts/create-user.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/kit": "^2.63.0",
@@ -35,6 +36,7 @@
 		"@sveltejs/adapter-node": "^5.5.7",
 		"better-sqlite3": "^13.0.2",
 		"drizzle-orm": "^0.45.2",
-		"ts-fsrs": "^5.4.1"
+		"ts-fsrs": "^5.4.1",
+		"tsx": "^4.23.1"
 	}
 }

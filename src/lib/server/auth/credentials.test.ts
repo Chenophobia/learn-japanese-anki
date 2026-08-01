@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCredentials } from '$lib/server/auth/credentials';
+import { validateCredentials } from './credentials';
 
 describe('validateCredentials', () => {
   it('accepts a reasonable username and password', () => {

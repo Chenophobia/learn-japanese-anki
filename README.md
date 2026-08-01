@@ -2,8 +2,9 @@
 
 A self-hosted flashcard app for studying the JLPT N4 curriculum in
 [`docs/curriculum-plan.md`](docs/curriculum-plan.md) using FSRS
-(Free Spaced Repetition Scheduler). Multiple users can sign up on the same
-instance; each has independent progress and scheduling.
+(Free Spaced Repetition Scheduler). Multiple users can use the same instance,
+each with independent progress and scheduling — but there is no self-signup;
+the operator creates every account (see "Creating users" below).
 
 ## Stack
 
@@ -83,6 +84,30 @@ docker compose up -d           # start again without rebuilding
 Typical workflow: iterate with `npm run dev` → run `npm test` → deploy with
 `docker compose up -d --build`.
 
+### Creating users
+
+There is no signup page — it was removed after launch because the app is
+reachable on a public domain and open registration invited bot accounts (see
+`docs/superpowers/specs/2026-07-31-flashcard-app-design.md` for the
+superseded design). The **only** way to add an account now is for the
+operator to run the `create-user` script against the same database the
+running container uses, with the container up:
+
+```bash
+docker exec -e CREATE_USER_USERNAME=someone -e CREATE_USER_PASSWORD='a-strong-password' \
+  learn-japanese npm run create-user
+```
+
+The container must already be running (`docker compose up -d`) — this runs
+`scripts/create-user.ts` inside it via `tsx`, straight off the TypeScript
+source with no separate build step, reusing the app's own validation,
+password hashing, and duplicate-username checks so a manually created account
+can't bypass any constraint the login flow assumes. Username/password are
+read from environment variables rather than argv specifically so the
+password doesn't land in shell history the way an argv-based invocation
+would. A duplicate username is refused with a non-zero exit code and a clear
+message; success prints `Created user "<username>" (id <id>).`.
+
 ### Backups
 
 Stop the container, then copy the database file and its WAL sidecar (SQLite
@@ -103,6 +128,22 @@ up owned by `root:root` on a Linux host — particularly if `./data` didn't
 already exist before the first `docker compose up` and Compose created it.
 If so, the backup/restore commands above need `sudo` to read or write those
 files as a non-root operator.
+
+**Stop the container before any ad hoc direct inspection of `app.db`** — e.g.
+opening a `sqlite3` shell or a scratch `docker exec ... node` script against
+it — while the app is also running. On this deployment's macOS host, `./data`
+is a bind mount served over virtiofs into the Linux container, and WAL
+mode's shared-memory locking (the `-shm` file) does not work across that
+boundary. A second process opening the database was observed, on this live
+deployment, to checkpoint and unlink the WAL out from under the running app,
+corrupting its view of the database. This is not a theoretical risk — it
+happened. Stop the container (`docker compose stop app`) before poking at
+`app.db` directly, and start it again afterward. `create-user` (above) is
+exempt from this warning only in the sense that it's the one sanctioned,
+narrowly-scoped exception — it opens, performs one write, and exits
+immediately — but it is still a second process touching the same file, so
+prefer running it when the app is otherwise idle, and treat any database
+oddity right after using it as a reason to check this note first.
 
 ### Reverse proxy and TLS
 
@@ -219,9 +260,10 @@ won't, because the tunnel talks to Homebrew nginx on port 8088/8089, not to
 this container.
 
 Verify after deploying: once the checklist above is complete, check
-`https://learn.chenaners.com` — it should redirect to `/login`, signup
-should work, and studying a card should persist across a page reload, with
-the session cookie showing `Secure`. In the meantime the app remains
+`https://learn.chenaners.com` — it should redirect to `/login`, a user
+created with `create-user` (see "Creating users" above) should be able to
+sign in, and studying a card should persist across a page reload, with the
+session cookie showing `Secure`. In the meantime the app remains
 reachable for testing directly at `http://127.0.0.1:3001`
 (`localhost`/`127.0.0.1` are exempt from the `Secure` requirement, so login
 works there today regardless of tunnel/nginx state).
