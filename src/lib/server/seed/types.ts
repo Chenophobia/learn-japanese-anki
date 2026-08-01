@@ -9,8 +9,15 @@ export type SeedUnit = {
   cards: SeedCard[];
 };
 
+/**
+ * A chapter's kind is its track — the heading it appears under on the course
+ * map. It is a grouping label, not a constraint on its units: the Hiragana
+ * and Katakana chapters each contain one `vocab` unit.
+ */
+export type ChapterKind = 'kana' | 'kanji' | 'vocab' | 'grammar';
+
 export type SeedChapter = {
   title: string;
-  kind: 'kana' | 'kanji_vocab' | 'grammar';
+  kind: ChapterKind;
   units: SeedUnit[];
 };

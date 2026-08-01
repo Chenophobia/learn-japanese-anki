@@ -10,5 +10,8 @@
   aria-valuemin={0}
   aria-valuemax={total}
 >
-  <div class="h-full rounded-full bg-accent transition-[width]" style="width: {percent}%"></div>
+  <div
+    class="h-full rounded-full bg-accent transition-[width] duration-500 ease-out"
+    style="width: {percent}%"
+  ></div>
 </div>

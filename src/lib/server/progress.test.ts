@@ -68,4 +68,31 @@ describe('chapterProgress', () => {
     const [chapter] = chapterProgress(db, userId);
     expect(chapter.units.map((u) => u.status)).toEqual(['done', 'done']);
   });
+
+  it('exposes each chapter kind so the map can draw track headings', () => {
+    const { db, userId } = fixture();
+    // A second chapter of a different kind. With only the fixture's single
+    // 'kana' chapter, reading the column and hardcoding 'kana' would be
+    // indistinguishable.
+    const [vocabCh] = db
+      .insert(chapters)
+      .values({ order: 2, title: 'Ch2', kind: 'vocab' })
+      .returning()
+      .all();
+    const [u3] = db
+      .insert(units)
+      .values({ chapterId: vocabCh.id, order: 1, title: 'U3', kind: 'vocab', dailyCap: 8 })
+      .returning()
+      .all();
+    db.insert(cards)
+      .values({
+        unitId: u3.id,
+        order: 1,
+        frontJson: '{"word":"猫"}',
+        backJson: '{"reading":"ねこ","meaning":"cat","example_sentence":"e"}'
+      })
+      .run();
+
+    expect(chapterProgress(db, userId).map((c) => c.kind)).toEqual(['kana', 'vocab']);
+  });
 });
