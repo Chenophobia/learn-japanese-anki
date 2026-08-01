@@ -1,4 +1,4 @@
-FROM node:22-slim AS deps
+FROM node:25-slim AS deps
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -15,13 +15,13 @@ RUN npm install --global node-gyp \
   && cd node_modules/better-sqlite3 && node-gyp rebuild --release --force_build=1 \
   && rm -rf prebuilds
 
-FROM node:22-slim AS build
+FROM node:25-slim AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build && npm prune --omit=dev
 
-FROM node:22-slim AS run
+FROM node:25-slim AS run
 WORKDIR /app
 ENV NODE_ENV=production PORT=3001 HOST=0.0.0.0 DATA_DIR=/app/data
 COPY --from=build /app/node_modules ./node_modules
