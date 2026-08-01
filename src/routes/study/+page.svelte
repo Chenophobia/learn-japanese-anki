@@ -2,14 +2,23 @@
   import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
   import type { SubmitFunction } from '@sveltejs/kit';
+  import { fly } from 'svelte/transition';
   import Card from '$lib/components/Card.svelte';
   import { rating } from '$lib/study-state.svelte';
+  import { motionDuration, prefersReducedMotion } from '$lib/motion';
 
   let { data, form } = $props();
 
   let revealed = $state(false);
   let submitting = $state(false);
   let rateButtons: HTMLButtonElement[] = $state([]);
+
+  // Read once per render rather than per transition, so both halves of a
+  // swap agree even if the preference changes mid-animation.
+  const slide = $derived.by(() => {
+    const reduced = prefersReducedMotion();
+    return { duration: motionDuration(200, reduced) };
+  });
 
   // toLocaleTimeString reflects the viewer's own timezone — but this
   // $derived also runs during SSR, so first paint uses the server's
@@ -114,7 +123,25 @@
     </p>
   {/if}
 
-  <Card kind={data.item.unitKind} front={data.item.front} back={data.item.back} {revealed} />
+  <!--
+    Both the outgoing and incoming card exist at once during a swap, stacked
+    in one grid cell so neither pushes the other around. The `delay` on the
+    incoming card lets the outgoing one clear first.
+
+    Strictly decorative: the rating POST fires on submit and never waits for
+    this to finish.
+  -->
+  <div class="grid">
+    {#key data.item.cardId}
+      <div
+        class="col-start-1 row-start-1"
+        in:fly={{ x: 24, duration: slide.duration, delay: slide.duration }}
+        out:fly={{ x: -24, duration: slide.duration }}
+      >
+        <Card kind={data.item.unitKind} front={data.item.front} back={data.item.back} {revealed} />
+      </div>
+    {/key}
+  </div>
 
   <!-- Anchored low so the primary action stays in a phone's thumb zone even
        when the card content is short; -mx/px cancels the page gutter so the
