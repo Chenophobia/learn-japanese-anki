@@ -72,18 +72,24 @@
     submitting = true;
     rating.inFlight = true;
     return async ({ update, result }) => {
-      // use:enhance's built-in `update()` only calls invalidateAll() when
-      // result.type === 'success' — never on a fail() response. A mismatch
-      // (stale/racing cardId) always comes back as a failure, so without an
-      // explicit invalidateAll() here, load never reruns and the page keeps
-      // showing the stale card behind the error banner instead of syncing to
-      // whatever the server actually has next.
-      await update();
-      if (result.type !== 'success') {
-        await invalidateAll();
+      try {
+        // use:enhance's built-in `update()` only calls invalidateAll() when
+        // result.type === 'success' — never on a fail() response. A mismatch
+        // (stale/racing cardId) always comes back as a failure, so without an
+        // explicit invalidateAll() here, load never reruns and the page keeps
+        // showing the stale card behind the error banner instead of syncing
+        // to whatever the server actually has next.
+        await update();
+        if (result.type !== 'success') {
+          await invalidateAll();
+        }
+      } finally {
+        // Always clear, even if update()/invalidateAll() rejected on a flaky
+        // connection. A stuck `inFlight` would silently disable revalidation
+        // for the rest of the page's life.
+        submitting = false;
+        rating.inFlight = false;
       }
-      submitting = false;
-      rating.inFlight = false;
     };
   };
 
