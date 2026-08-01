@@ -2,6 +2,13 @@
   import ProgressBar from '$lib/components/ProgressBar.svelte';
   let { data } = $props();
 
+  const TRACK_LABELS: Record<string, string> = {
+    kana: 'Alphabet',
+    kanji: 'Kanji',
+    vocab: 'Vocabulary',
+    grammar: 'Grammar'
+  };
+
   const currentChapterId = $derived(
     data.chapters.find((c) => c.units.some((u) => u.status === 'current'))?.id
   );
@@ -42,6 +49,22 @@
   {#each data.chapters as chapter, i (chapter.id)}
     {@const isCurrentChapter = chapter.id === currentChapterId}
     {@const isLastChapter = i === data.chapters.length - 1}
+    {@const startsTrack = chapter.kind !== data.chapters[i - 1]?.kind}
+    {#if startsTrack}
+      <!--
+        A track heading, drawn wherever `kind` differs from the previous
+        chapter's. This relies on chapters being authored in track order, so
+        each track is contiguous and gets exactly one heading; content.test.ts
+        asserts that contiguity. `<h2>` here demotes the chapter titles below
+        to `<h3>`, keeping the outline a real hierarchy rather than a flat run
+        of same-level headings.
+      -->
+      <h2
+        class="px-1 pt-5 pb-1 text-xs font-semibold tracking-widest text-ink-muted uppercase first:pt-0"
+      >
+        {TRACK_LABELS[chapter.kind] ?? chapter.kind}
+      </h2>
+    {/if}
     <details
       open={isCurrentChapter || (courseComplete && isLastChapter)}
       class="group overflow-hidden rounded-lg border bg-surface {isCurrentChapter
@@ -59,7 +82,7 @@
         </span>
         <div class="min-w-0 flex-1">
           <div class="flex items-baseline justify-between gap-3">
-            <h2 class="truncate font-medium text-ink">{chapter.title}</h2>
+            <h3 class="truncate font-medium text-ink">{chapter.title}</h3>
             <span class="shrink-0 text-sm tabular-nums text-ink-muted">
               {chapter.introduced}<span class="opacity-60">/{chapter.total}</span>
             </span>

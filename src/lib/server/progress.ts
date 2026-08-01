@@ -1,6 +1,7 @@
 import { and, asc, eq, sql } from 'drizzle-orm';
 import type { Db } from './db/connect';
 import type { UnitKind } from '$lib/cards';
+import type { ChapterKind } from '$lib/server/seed/types';
 import { chapters, units, cards, userCards } from './db/schema';
 import { currentUnitId } from './queue';
 
@@ -20,6 +21,8 @@ export type UnitProgress = {
 export type ChapterProgress = {
   id: number;
   title: string;
+  /** The chapter's track — drives the map's section headings. */
+  kind: ChapterKind;
   total: number;
   introduced: number;
   units: UnitProgress[];
@@ -36,6 +39,7 @@ export function chapterProgress(db: Db, userId: number): ChapterProgress[] {
     .select({
       chapterId: chapters.id,
       chapterTitle: chapters.title,
+      chapterKind: chapters.kind,
       unitId: units.id,
       unitTitle: units.title,
       unitKind: units.kind,
@@ -59,7 +63,14 @@ export function chapterProgress(db: Db, userId: number): ChapterProgress[] {
   rows.forEach((row, index) => {
     let chapter = byChapter.get(row.chapterId);
     if (!chapter) {
-      chapter = { id: row.chapterId, title: row.chapterTitle, total: 0, introduced: 0, units: [] };
+      chapter = {
+        id: row.chapterId,
+        title: row.chapterTitle,
+        kind: row.chapterKind as ChapterKind,
+        total: 0,
+        introduced: 0,
+        units: []
+      };
       byChapter.set(row.chapterId, chapter);
     }
     chapter.total += row.total;
