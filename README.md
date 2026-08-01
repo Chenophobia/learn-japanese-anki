@@ -153,6 +153,29 @@ unlinked-WAL corruption described under "Backups", but the two connections
 can still contend for the write lock. Prefer the `stop` / `run --rm` /
 `start` sequence above whenever you can afford the few seconds of downtime.
 
+### Rebuilding the curriculum
+
+Changing the curriculum's shape (adding cards, renaming units, regrouping
+chapters) requires a full rebuild, because `seedIfEmpty` only ever seeds an
+empty database.
+
+**This destroys all study progress.** `user_cards` and `review_logs` reference
+`cards.id`, an autoincrement key a reseed does not preserve — so scheduling
+state, streaks, and review history for every user are lost. Accounts and
+sessions survive.
+
+Stop the app first, so exactly one process touches `app.db`:
+
+```
+docker compose stop
+cp data/app.db "data/app.db.bak-$(date +%Y%m%d%H%M%S)"
+docker compose run --rm -e RESEED_CONFIRM=yes app npm run reseed
+docker compose start
+```
+
+Without `RESEED_CONFIRM=yes` the script prints what it *would* destroy and
+exits 1, which is the safe way to check the row counts first.
+
 ### Backups
 
 Stop the container, then copy the database file. The app runs SQLite in

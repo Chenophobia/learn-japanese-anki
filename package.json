@@ -17,7 +17,8 @@
 		"test:watch": "vitest",
 		"db:generate": "drizzle-kit generate",
 		"create-user": "tsx scripts/create-user.ts",
-		"set-password": "tsx scripts/set-password.ts"
+		"set-password": "tsx scripts/set-password.ts",
+		"reseed": "tsx scripts/reseed.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/kit": "^2.63.0",
