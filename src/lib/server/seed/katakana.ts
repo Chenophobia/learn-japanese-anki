@@ -38,7 +38,7 @@ const base: SeedCard[] = [
   kana('ホ', 'ho', 'a cross plus two lines — ho ho ho'),
   kana('マ', 'ma', "a thumb's up"),
   kana('ミ', 'mi', 'three short strokes'),
-  kana('ム', 'mu', "a cow's face — \"muu\""),
+  kana('ム', 'mu', 'a cow\'s face — "muu"'),
   kana('メ', 'me', 'crossed eyes'),
   kana('モ', 'mo', 'more lines than ma'),
   kana('ヤ', 'ya', 'arms raised in a ya!'),
@@ -129,7 +129,12 @@ const extended: SeedCard[] = [
   kana('ウォ', 'wo', 'ウ + small ォ — "wo" as in ウォーター (water)')
 ];
 
-const verb = (word: string, reading: string, meaning: string, example_sentence: string): SeedCard => ({
+const verb = (
+  word: string,
+  reading: string,
+  meaning: string,
+  example_sentence: string
+): SeedCard => ({
   front: { word },
   back: { reading, meaning, example_sentence }
 });
@@ -138,20 +143,45 @@ const loanwords: SeedCard[] = [
   verb('コーヒー', 'コーヒー', 'coffee', 'コーヒーをのみます。(I drink coffee.)'),
   verb('タクシー', 'タクシー', 'taxi', 'タクシーにのります。(I get in a taxi.)'),
   verb('テスト', 'テスト', 'test', 'あしたテストがあります。(There is a test tomorrow.)'),
-  verb('アイスクリーム', 'アイスクリーム', 'ice cream', 'アイスクリームをたべます。(I eat ice cream.)'),
+  verb(
+    'アイスクリーム',
+    'アイスクリーム',
+    'ice cream',
+    'アイスクリームをたべます。(I eat ice cream.)'
+  ),
   verb('カメラ', 'カメラ', 'camera', 'カメラでしゃしんをとります。(I take a photo with a camera.)'),
   verb('コンサート', 'コンサート', 'concert', 'コンサートにいきます。(I go to a concert.)'),
-  verb('スーパー', 'スーパー', 'supermarket', 'スーパーでかいものをします。(I shop at the supermarket.)'),
+  verb(
+    'スーパー',
+    'スーパー',
+    'supermarket',
+    'スーパーでかいものをします。(I shop at the supermarket.)'
+  ),
   verb('ノート', 'ノート', 'notebook', 'ノートにかきます。(I write in a notebook.)'),
   verb('ホテル', 'ホテル', 'hotel', 'ホテルにとまります。(I stay at a hotel.)'),
   verb('ハンバーガー', 'ハンバーガー', 'hamburger', 'ハンバーガーをたべます。(I eat a hamburger.)'),
   verb('ニュース', 'ニュース', 'news', 'ニュースをみます。(I watch the news.)'),
   verb('フルーツ', 'フルーツ', 'fruit', 'フルーツがすきです。(I like fruit.)'),
   verb('ナイフ', 'ナイフ', 'knife', 'ナイフをつかいます。(I use a knife.)'),
-  verb('スマートフォン', 'スマートフォン', 'smartphone', 'スマートフォンをつかいます。(I use a smartphone.)'),
-  verb('インターネット', 'インターネット', 'internet', 'インターネットでしらべます。(I look it up on the internet.)'),
+  verb(
+    'スマートフォン',
+    'スマートフォン',
+    'smartphone',
+    'スマートフォンをつかいます。(I use a smartphone.)'
+  ),
+  verb(
+    'インターネット',
+    'インターネット',
+    'internet',
+    'インターネットでしらべます。(I look it up on the internet.)'
+  ),
   verb('レストラン', 'レストラン', 'restaurant', 'レストランでたべます。(I eat at a restaurant.)'),
-  verb('コンビニ', 'コンビニ', 'convenience store', 'コンビニでべんとうをかいます。(I buy a bento at the convenience store.)'),
+  verb(
+    'コンビニ',
+    'コンビニ',
+    'convenience store',
+    'コンビニでべんとうをかいます。(I buy a bento at the convenience store.)'
+  ),
   verb('バス', 'バス', 'bus', 'バスにのります。(I get on the bus.)'),
   verb('テレビ', 'テレビ', 'television', 'テレビをみます。(I watch television.)'),
   verb('ラジオ', 'ラジオ', 'radio', 'ラジオをききます。(I listen to the radio.)'),

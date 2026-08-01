@@ -4,14 +4,14 @@
 </script>
 
 <div
-  class="h-1.5 w-full overflow-hidden rounded-full bg-hairline"
+  class="bg-hairline h-1.5 w-full overflow-hidden rounded-full"
   role="progressbar"
   aria-valuenow={value}
   aria-valuemin={0}
   aria-valuemax={total}
 >
   <div
-    class="h-full rounded-full bg-accent transition-[width] duration-500 ease-out"
+    class="bg-accent h-full rounded-full transition-[width] duration-500 ease-out"
     style="width: {percent}%"
   ></div>
 </div>

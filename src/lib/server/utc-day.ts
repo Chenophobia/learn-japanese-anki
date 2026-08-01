@@ -7,5 +7,7 @@
  * the kind of thing that silently drifts apart later.
  */
 export function utcDayStart(date: Date, offsetDays = 0): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + offsetDays));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + offsetDays)
+  );
 }

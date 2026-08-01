@@ -4,35 +4,46 @@ Grounded directly in the canonical reference implementation ([`open-spaced-repet
 
 ## 1. Mental model
 
-Every card carries two numbers: **Stability (S)** — days for recall probability to decay from 100% to 90% — and **Difficulty (D)** — bounded [1,10], how hard it is to *grow* stability on a good review. Recall probability at any moment (**Retrievability, R**) is derived from S and elapsed time. There is no per-card "ease factor" — S and D are updated by formula on every review, and the four rating buttons (Again/Hard/Good/Easy) feed into those formulas differently. A single tunable knob, **desired retention** (default 90%), converts a card's stability into a concrete next-review interval.
+Every card carries two numbers: **Stability (S)** — days for recall probability to decay from 100% to 90% — and **Difficulty (D)** — bounded [1,10], how hard it is to _grow_ stability on a good review. Recall probability at any moment (**Retrievability, R**) is derived from S and elapsed time. There is no per-card "ease factor" — S and D are updated by formula on every review, and the four rating buttons (Again/Hard/Good/Easy) feed into those formulas differently. A single tunable knob, **desired retention** (default 90%), converts a card's stability into a concrete next-review interval.
 
 ## 2. Data shape
 
 ```ts
-enum State { New = 0, Learning = 1, Review = 2, Relearning = 3 }
-enum Rating { Manual = 0, Again = 1, Hard = 2, Good = 3, Easy = 4 }
+enum State {
+  New = 0,
+  Learning = 1,
+  Review = 2,
+  Relearning = 3
+}
+enum Rating {
+  Manual = 0,
+  Again = 1,
+  Hard = 2,
+  Good = 3,
+  Easy = 4
+}
 
 interface Card {
-  due: Date
-  stability: number
-  difficulty: number
-  scheduled_days: number   // interval just assigned
-  learning_steps: number   // index into learning_steps/relearning_steps
-  reps: number
-  lapses: number
-  state: State
-  last_review?: Date
+  due: Date;
+  stability: number;
+  difficulty: number;
+  scheduled_days: number; // interval just assigned
+  learning_steps: number; // index into learning_steps/relearning_steps
+  reps: number;
+  lapses: number;
+  state: State;
+  last_review?: Date;
 }
 
 interface ReviewLog {
-  rating: Rating
-  state: State            // state the card was in AT the moment of this review
-  due: Date
-  stability: number
-  difficulty: number
-  scheduled_days: number
-  learning_steps: number
-  review: Date             // when this review happened
+  rating: Rating;
+  state: State; // state the card was in AT the moment of this review
+  due: Date;
+  stability: number;
+  difficulty: number;
+  scheduled_days: number;
+  learning_steps: number;
+  review: Date; // when this review happened
 }
 ```
 
@@ -152,13 +163,13 @@ These are trained on ~700M real Anki reviews and are a completely reasonable sta
 ## 6. Scheduling flow (state machine)
 
 - **New card, any rating** → `S = S0(rating)`, `D = D0(rating)` (init formulas above, ignoring elapsed time entirely).
-- **Learning/Relearning card, any rating** → stability update via the *same-day* formula (§4) since you're always still within the same calendar day during steps; state stays Learning/Relearning until steps are exhausted, then graduates to Review with an FSRS-computed interval.
-  - Step timing (from the reference `BasicLearningStepsStrategy`): **Again** always jumps to the first step's delay. **Hard** = midpoint between step 1 and step 2 delays (or 1.5× step 1 if there's only one step) — it does *not* have its own trained delay, it's interpolated. **Good** advances to the next step's delay, or graduates immediately if there is no next step. **Easy always graduates immediately**, regardless of which step you're on, using the FSRS-computed interval rather than a fixed "easy interval" constant.
+- **Learning/Relearning card, any rating** → stability update via the _same-day_ formula (§4) since you're always still within the same calendar day during steps; state stays Learning/Relearning until steps are exhausted, then graduates to Review with an FSRS-computed interval.
+  - Step timing (from the reference `BasicLearningStepsStrategy`): **Again** always jumps to the first step's delay. **Hard** = midpoint between step 1 and step 2 delays (or 1.5× step 1 if there's only one step) — it does _not_ have its own trained delay, it's interpolated. **Good** advances to the next step's delay, or graduates immediately if there is no next step. **Easy always graduates immediately**, regardless of which step you're on, using the FSRS-computed interval rather than a fixed "easy interval" constant.
 - **Review card (already graduated), rating = Again** → lapse: `lapses += 1`, stability via the forgetting formula, state → Relearning, re-enters relearning steps.
-- **Review card, rating = Hard/Good/Easy** → stability via the successful-recall formula using the card's retrievability *at the moment of review* (computed from elapsed days since last review), interval computed from desired retention, state stays Review.
+- **Review card, rating = Hard/Good/Easy** → stability via the successful-recall formula using the card's retrievability _at the moment of review_ (computed from elapsed days since last review), interval computed from desired retention, state stays Review.
 - **Ordering guarantee worth keeping in your UI**: the reference implementation explicitly clamps so that `hard_interval ≤ good_interval` and `good_interval < easy_interval` (each button's preview interval is forced to be monotonically ≥ the one to its left, adding a minimum +1 day where needed) — so your four preview labels never show something confusing like Hard giving a longer gap than Good.
 
-## 7. What FSRS does *not* give you — build these yourself
+## 7. What FSRS does _not_ give you — build these yourself
 
 FSRS only answers "given this card's history, what's the next interval." It has no opinion on:
 
@@ -172,20 +183,20 @@ FSRS only answers "given this card's history, what's the next interval." It has 
 **Don't hand-roll the math above in production — depend on the reference library.** The formulas are precise enough to get subtly wrong (the same-day vs. forget-stability branching in particular), and `ts-fsrs` is MIT-licensed, actively maintained by the same org that runs Anki's FSRS research, works isomorphically in Node and the browser, and has zero dependencies.
 
 ```ts
-import { fsrs, generatorParameters, Rating, createEmptyCard } from 'ts-fsrs'
+import { fsrs, generatorParameters, Rating, createEmptyCard } from 'ts-fsrs';
 
-const scheduler = fsrs(generatorParameters({ enable_fuzz: true }))
+const scheduler = fsrs(generatorParameters({ enable_fuzz: true }));
 
 // new card
-let card = createEmptyCard(new Date())
+let card = createEmptyCard(new Date());
 
 // on review: get all four possible outcomes with their resulting card state + interval
-const outcomes = scheduler.repeat(card, new Date())
+const outcomes = scheduler.repeat(card, new Date());
 // outcomes[Rating.Again].card.due, outcomes[Rating.Good].card.scheduled_days, etc.
 // — this is exactly what you render on the four buttons before the user presses one
 
 // after the user picks a rating:
-const { card: nextCard, log } = outcomes[Rating.Good]
+const { card: nextCard, log } = outcomes[Rating.Good];
 // persist nextCard as the card's new row, append log to review_logs
 ```
 
@@ -193,4 +204,4 @@ Equivalent packages exist for Python (`py-fsrs`) and Rust (`rs-fsrs`) if your sc
 
 ## 9. Personalizing parameters (later, optional)
 
-The default `w` array works fine from day one. Once a user has a few hundred reviews logged, you *can* run the official optimizer (`fsrs-rs` or the Python `fsrs-optimizer`) against their `ReviewLog` history to fit a personalized `w` — this is what actually makes FSRS adapt to an individual's memory, but it's a batch job you can bolt on well after the core review loop works, not a launch requirement.
+The default `w` array works fine from day one. Once a user has a few hundred reviews logged, you _can_ run the official optimizer (`fsrs-rs` or the Python `fsrs-optimizer`) against their `ReviewLog` history to fit a personalized `w` — this is what actually makes FSRS adapt to an individual's memory, but it's a batch job you can bolt on well after the core review loop works, not a launch requirement.

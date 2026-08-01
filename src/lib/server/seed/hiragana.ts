@@ -124,7 +124,12 @@ const special: SeedCard[] = [
   kana('ん + b/p', 'm', 'ん becomes an "m" sound before b and p — せんぱい is "sempai"')
 ];
 
-const verb = (word: string, reading: string, meaning: string, example_sentence: string): SeedCard => ({
+const verb = (
+  word: string,
+  reading: string,
+  meaning: string,
+  example_sentence: string
+): SeedCard => ({
   front: { word },
   back: { reading, meaning, example_sentence }
 });

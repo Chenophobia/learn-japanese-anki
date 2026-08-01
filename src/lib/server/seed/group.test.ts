@@ -42,7 +42,10 @@ describe('groupIntoChapters', () => {
     // The failure this whole helper exists to prevent: a unit quietly
     // vanishing from the curriculum during a regroup.
     expect(() =>
-      groupIntoChapters([unit('a'), unit('orphan')], [{ title: 'C', kind: 'vocab', unitTitles: ['a'] }])
+      groupIntoChapters(
+        [unit('a'), unit('orphan')],
+        [{ title: 'C', kind: 'vocab', unitTitles: ['a'] }]
+      )
     ).toThrow(/left out of every chapter: orphan/);
   });
 

@@ -1,7 +1,12 @@
 <script lang="ts">
   import type { UnitKind, CardFront, CardBack } from '$lib/cards';
 
-  let { kind, front, back, revealed }: {
+  let {
+    kind,
+    front,
+    back,
+    revealed
+  }: {
     kind: UnitKind;
     front: CardFront;
     back: CardBack;
@@ -40,40 +45,42 @@
   >
     <div class={face} inert={revealed} aria-hidden={revealed}>
       {#if kind === 'kana' || kind === 'kanji'}
-        <div class="text-8xl leading-none text-ink sm:text-9xl">{(front as { char: string }).char}</div>
+        <div class="text-ink text-8xl leading-none sm:text-9xl">
+          {(front as { char: string }).char}
+        </div>
       {:else if kind === 'vocab'}
-        <div class="max-w-full text-5xl leading-tight break-words text-ink sm:text-6xl">
+        <div class="text-ink max-w-full text-5xl leading-tight break-words sm:text-6xl">
           {(front as { word: string }).word}
         </div>
       {:else}
-        <div class="max-w-md text-3xl leading-snug break-words text-ink sm:text-4xl">
+        <div class="text-ink max-w-md text-3xl leading-snug break-words sm:text-4xl">
           {(front as { pattern: string }).pattern}
         </div>
       {/if}
     </div>
 
-    <div
-      class="{face} [transform:rotateY(180deg)]"
-      inert={!revealed}
-      aria-hidden={!revealed}
-    >
+    <div class="{face} [transform:rotateY(180deg)]" inert={!revealed} aria-hidden={!revealed}>
       <div class="max-w-md space-y-2">
         {#if kind === 'kana'}
-          <p class="text-2xl font-semibold text-ink">{(back as { romaji: string }).romaji}</p>
-          <p class="text-sm break-words text-ink-muted">{(back as { mnemonic: string }).mnemonic}</p>
+          <p class="text-ink text-2xl font-semibold">{(back as { romaji: string }).romaji}</p>
+          <p class="text-ink-muted text-sm break-words">
+            {(back as { mnemonic: string }).mnemonic}
+          </p>
         {:else if kind === 'kanji'}
-          <p class="text-2xl font-semibold text-ink">{(back as { meaning: string }).meaning}</p>
-          <p class="text-lg text-ink-muted">{(back as { reading: string }).reading}</p>
-          <p class="text-sm break-words text-ink-muted">{(back as { example_word: string }).example_word}</p>
+          <p class="text-ink text-2xl font-semibold">{(back as { meaning: string }).meaning}</p>
+          <p class="text-ink-muted text-lg">{(back as { reading: string }).reading}</p>
+          <p class="text-ink-muted text-sm break-words">
+            {(back as { example_word: string }).example_word}
+          </p>
         {:else if kind === 'vocab'}
-          <p class="text-lg text-ink-muted">{(back as { reading: string }).reading}</p>
-          <p class="text-2xl font-semibold text-ink">{(back as { meaning: string }).meaning}</p>
-          <p class="text-sm break-words text-ink-muted">
+          <p class="text-ink-muted text-lg">{(back as { reading: string }).reading}</p>
+          <p class="text-ink text-2xl font-semibold">{(back as { meaning: string }).meaning}</p>
+          <p class="text-ink-muted text-sm break-words">
             {(back as { example_sentence: string }).example_sentence}
           </p>
         {:else}
-          <p class="text-2xl font-semibold text-ink">{(back as { meaning: string }).meaning}</p>
-          <p class="text-sm break-words text-ink-muted">{(back as { example: string }).example}</p>
+          <p class="text-ink text-2xl font-semibold">{(back as { meaning: string }).meaning}</p>
+          <p class="text-ink-muted text-sm break-words">{(back as { example: string }).example}</p>
         {/if}
       </div>
     </div>

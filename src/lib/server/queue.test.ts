@@ -9,22 +9,51 @@ const NOW = new Date('2026-03-10T09:00:00.000Z');
 
 function fixture() {
   const db = createTestDb();
-  const [user] = db.insert(users).values({ username: 'u', passwordHash: 'x', createdAt: NOW.toISOString() }).returning().all();
+  const [user] = db
+    .insert(users)
+    .values({ username: 'u', passwordHash: 'x', createdAt: NOW.toISOString() })
+    .returning()
+    .all();
 
-  const [ch1] = db.insert(chapters).values({ order: 1, title: 'Ch1', kind: 'kana' }).returning().all();
-  const [ch2] = db.insert(chapters).values({ order: 2, title: 'Ch2', kind: 'kana' }).returning().all();
-  const [u1] = db.insert(units).values({ chapterId: ch1.id, order: 1, title: 'U1', kind: 'kana', dailyCap: 2 }).returning().all();
-  const [u2] = db.insert(units).values({ chapterId: ch1.id, order: 2, title: 'U2', kind: 'kana', dailyCap: 2 }).returning().all();
-  const [u3] = db.insert(units).values({ chapterId: ch2.id, order: 1, title: 'U3', kind: 'kana', dailyCap: 2 }).returning().all();
+  const [ch1] = db
+    .insert(chapters)
+    .values({ order: 1, title: 'Ch1', kind: 'kana' })
+    .returning()
+    .all();
+  const [ch2] = db
+    .insert(chapters)
+    .values({ order: 2, title: 'Ch2', kind: 'kana' })
+    .returning()
+    .all();
+  const [u1] = db
+    .insert(units)
+    .values({ chapterId: ch1.id, order: 1, title: 'U1', kind: 'kana', dailyCap: 2 })
+    .returning()
+    .all();
+  const [u2] = db
+    .insert(units)
+    .values({ chapterId: ch1.id, order: 2, title: 'U2', kind: 'kana', dailyCap: 2 })
+    .returning()
+    .all();
+  const [u3] = db
+    .insert(units)
+    .values({ chapterId: ch2.id, order: 1, title: 'U3', kind: 'kana', dailyCap: 2 })
+    .returning()
+    .all();
 
   const made: Record<number, number[]> = { [u1.id]: [], [u2.id]: [], [u3.id]: [] };
   for (const unit of [u1, u2, u3]) {
     for (let i = 1; i <= 3; i++) {
-      const [card] = db.insert(cards).values({
-        unitId: unit.id, order: i,
-        frontJson: JSON.stringify({ char: `${unit.title}-${i}` }),
-        backJson: JSON.stringify({ romaji: 'x', mnemonic: 'y' })
-      }).returning().all();
+      const [card] = db
+        .insert(cards)
+        .values({
+          unitId: unit.id,
+          order: i,
+          frontJson: JSON.stringify({ char: `${unit.title}-${i}` }),
+          backJson: JSON.stringify({ romaji: 'x', mnemonic: 'y' })
+        })
+        .returning()
+        .all();
       made[unit.id].push(card.id);
     }
   }
@@ -48,13 +77,15 @@ describe('currentUnitId', () => {
 
   it('crosses chapter boundaries in global order', () => {
     const { db, userId, u1, u2, u3, made } = fixture();
-    for (const id of [...made[u1.id], ...made[u2.id]]) recordReview(db, userId, id, Rating.Good, NOW);
+    for (const id of [...made[u1.id], ...made[u2.id]])
+      recordReview(db, userId, id, Rating.Good, NOW);
     expect(currentUnitId(db, userId)).toBe(u3.id);
   });
 
   it('is null when the curriculum is exhausted', () => {
     const { db, userId, u1, u2, u3, made } = fixture();
-    for (const id of [...made[u1.id], ...made[u2.id], ...made[u3.id]]) recordReview(db, userId, id, Rating.Good, NOW);
+    for (const id of [...made[u1.id], ...made[u2.id], ...made[u3.id]])
+      recordReview(db, userId, id, Rating.Good, NOW);
     expect(currentUnitId(db, userId)).toBeNull();
   });
 });
@@ -148,8 +179,16 @@ describe('daily cap composes across unit boundaries', () => {
   // finished in one day at cap 2 without bypassing the cap.
   function twoCardUnitsFixture(dailyCaps: [number, number] = [2, 2]) {
     const db = createTestDb();
-    const [user] = db.insert(users).values({ username: 'u2', passwordHash: 'x', createdAt: NOW.toISOString() }).returning().all();
-    const [ch] = db.insert(chapters).values({ order: 1, title: 'Ch', kind: 'kana' }).returning().all();
+    const [user] = db
+      .insert(users)
+      .values({ username: 'u2', passwordHash: 'x', createdAt: NOW.toISOString() })
+      .returning()
+      .all();
+    const [ch] = db
+      .insert(chapters)
+      .values({ order: 1, title: 'Ch', kind: 'kana' })
+      .returning()
+      .all();
     const [u1] = db
       .insert(units)
       .values({ chapterId: ch.id, order: 1, title: 'U1', kind: 'kana', dailyCap: dailyCaps[0] })
@@ -164,11 +203,16 @@ describe('daily cap composes across unit boundaries', () => {
     const made: Record<number, number[]> = { [u1.id]: [], [u2.id]: [] };
     for (const unit of [u1, u2]) {
       for (let i = 1; i <= 2; i++) {
-        const [card] = db.insert(cards).values({
-          unitId: unit.id, order: i,
-          frontJson: JSON.stringify({ char: `${unit.title}-${i}` }),
-          backJson: JSON.stringify({ romaji: 'x', mnemonic: 'y' })
-        }).returning().all();
+        const [card] = db
+          .insert(cards)
+          .values({
+            unitId: unit.id,
+            order: i,
+            frontJson: JSON.stringify({ char: `${unit.title}-${i}` }),
+            backJson: JSON.stringify({ romaji: 'x', mnemonic: 'y' })
+          })
+          .returning()
+          .all();
         made[unit.id].push(card.id);
       }
     }
@@ -243,7 +287,11 @@ describe('nextDueTime', () => {
     expect(next!.getTime()).toBeGreaterThan(NOW.getTime());
 
     // It's the earlier of the two, not just whichever unit is scanned first.
-    const [row] = db.select().from(userCards).where(and(eq(userCards.userId, userId), eq(userCards.cardId, made[u1.id][0]))).all();
+    const [row] = db
+      .select()
+      .from(userCards)
+      .where(and(eq(userCards.userId, userId), eq(userCards.cardId, made[u1.id][0])))
+      .all();
     expect(next!.toISOString()).toBe(row.due);
   });
 

@@ -71,7 +71,11 @@ function introducedToday(db: Db, userId: number, now: Date): number {
  * smaller `dailyCap` gets zero, not a negative that would invert into extra
  * cards via `Math.min`.
  */
-function capState(db: Db, userId: number, now: Date): { unitId: number | null; newAvailable: number } {
+function capState(
+  db: Db,
+  userId: number,
+  now: Date
+): { unitId: number | null; newAvailable: number } {
   const unitId = currentUnitId(db, userId);
   if (unitId === null) return { unitId: null, newAvailable: 0 };
 
@@ -87,7 +91,11 @@ function capState(db: Db, userId: number, now: Date): { unitId: number | null; n
   return { unitId, newAvailable: Math.min(capLeft, remainingInUnit) };
 }
 
-export function queueCounts(db: Db, userId: number, now: Date = new Date()): { due: number; newAvailable: number } {
+export function queueCounts(
+  db: Db,
+  userId: number,
+  now: Date = new Date()
+): { due: number; newAvailable: number } {
   const [dueRow] = db
     .select({ n: sql<number>`count(*)` })
     .from(userCards)
@@ -101,8 +109,13 @@ export function queueCounts(db: Db, userId: number, now: Date = new Date()): { d
 export function nextQueueItem(db: Db, userId: number, now: Date = new Date()): QueueItem | null {
   const [review] = db
     .select({
-      cardId: cards.id, unitId: units.id, unitTitle: units.title, unitKind: units.kind,
-      frontJson: cards.frontJson, backJson: cards.backJson, uc: userCards
+      cardId: cards.id,
+      unitId: units.id,
+      unitTitle: units.title,
+      unitKind: units.kind,
+      frontJson: cards.frontJson,
+      backJson: cards.backJson,
+      uc: userCards
     })
     .from(userCards)
     .innerJoin(cards, eq(cards.id, userCards.cardId))
@@ -130,8 +143,11 @@ export function nextQueueItem(db: Db, userId: number, now: Date = new Date()): Q
 
   const [fresh] = db
     .select({
-      cardId: cards.id, unitTitle: units.title, unitKind: units.kind,
-      frontJson: cards.frontJson, backJson: cards.backJson
+      cardId: cards.id,
+      unitTitle: units.title,
+      unitKind: units.kind,
+      frontJson: cards.frontJson,
+      backJson: cards.backJson
     })
     .from(cards)
     .innerJoin(units, eq(units.id, cards.unitId))
@@ -175,13 +191,25 @@ export function nextDueTime(db: Db, userId: number, now: Date): Date | null {
 
 function toRow(uc: typeof userCards.$inferSelect): UserCardRow {
   return {
-    state: uc.state, stability: uc.stability, difficulty: uc.difficulty, due: uc.due,
-    scheduledDays: uc.scheduledDays, learningSteps: uc.learningSteps,
-    reps: uc.reps, lapses: uc.lapses, lastReview: uc.lastReview
+    state: uc.state,
+    stability: uc.stability,
+    difficulty: uc.difficulty,
+    due: uc.due,
+    scheduledDays: uc.scheduledDays,
+    learningSteps: uc.learningSteps,
+    reps: uc.reps,
+    lapses: uc.lapses,
+    lastReview: uc.lastReview
   };
 }
 
-export function recordReview(db: Db, userId: number, cardId: number, rating: number, now: Date = new Date()): void {
+export function recordReview(
+  db: Db,
+  userId: number,
+  cardId: number,
+  rating: number,
+  now: Date = new Date()
+): void {
   db.transaction((tx) => {
     const [existing] = tx
       .select()
@@ -193,11 +221,18 @@ export function recordReview(db: Db, userId: number, cardId: number, rating: num
     const { next, log } = applyRating(current, rating, now);
 
     if (existing) {
-      tx.update(userCards).set(next).where(and(eq(userCards.userId, userId), eq(userCards.cardId, cardId))).run();
+      tx.update(userCards)
+        .set(next)
+        .where(and(eq(userCards.userId, userId), eq(userCards.cardId, cardId)))
+        .run();
     } else {
-      tx.insert(userCards).values({ userId, cardId, ...next }).run();
+      tx.insert(userCards)
+        .values({ userId, cardId, ...next })
+        .run();
     }
 
-    tx.insert(reviewLogs).values({ userId, cardId, ...log }).run();
+    tx.insert(reviewLogs)
+      .values({ userId, cardId, ...log })
+      .run();
   });
 }

@@ -5,8 +5,11 @@ import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
 function storedHash(db: ReturnType<typeof createTestDb>, username: string): string | undefined {
-  return db.select({ h: users.passwordHash }).from(users).where(eq(users.username, username)).all()[0]
-    ?.h;
+  return db
+    .select({ h: users.passwordHash })
+    .from(users)
+    .where(eq(users.username, username))
+    .all()[0]?.h;
 }
 
 describe('usernameTaken', () => {

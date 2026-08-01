@@ -30,14 +30,18 @@ describe('shouldRevalidate', () => {
     // The rating's own handler calls update()/invalidateAll() when it
     // resolves. A second concurrent load would race it, and the loser's
     // result decides which card is displayed.
-    expect(shouldRevalidate(input({ restoredFromBfcache: true, ratingInFlight: true }))).toBe(false);
+    expect(shouldRevalidate(input({ restoredFromBfcache: true, ratingInFlight: true }))).toBe(
+      false
+    );
     expect(shouldRevalidate(input({ wasHidden: true, ratingInFlight: true }))).toBe(false);
   });
 
   it('never revalidates a bfcache restore while the answer is revealed but unrated', () => {
     // The server would serve back the exact same card, so refetching here
     // only costs the user their reveal for no gain.
-    expect(shouldRevalidate(input({ restoredFromBfcache: true, answerRevealed: true }))).toBe(false);
+    expect(shouldRevalidate(input({ restoredFromBfcache: true, answerRevealed: true }))).toBe(
+      false
+    );
   });
 
   it('never revalidates a visibility restore while the answer is revealed but unrated', () => {

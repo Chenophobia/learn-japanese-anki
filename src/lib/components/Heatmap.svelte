@@ -74,6 +74,7 @@
     Array.from({ length: WEEKS }, (_, w) =>
       Array.from({ length: 7 }, (_, d) => {
         const offset = (WEEKS - 1 - w) * 7 + (6 - d);
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity -- scratch value, mutated and discarded inside this one computation
         const date = new Date(end);
         date.setUTCDate(date.getUTCDate() - offset);
         const key = isoOf(date);
@@ -92,9 +93,7 @@
   // stats.ts already queries exactly `range`, so this normally filters
   // nothing. It keeps the component self-consistent for any input: the
   // screen-reader list must never announce a day the grid doesn't draw.
-  const visibleDays = $derived(
-    days.filter((d) => d.date >= range.start && d.date <= range.end)
-  );
+  const visibleDays = $derived(days.filter((d) => d.date >= range.start && d.date <= range.end));
   const totalReviews = $derived(visibleDays.reduce((sum, d) => sum + d.count, 0));
   const activeDays = $derived(visibleDays.length);
 
@@ -116,8 +115,9 @@
   -->
   <p class="sr-only">
     Review activity heatmap: {totalReviews}
-    {totalReviews === 1 ? 'review' : 'reviews'} across {activeDays} active {activeDays === 1 ? 'day' : 'days'} in the
-    last year.
+    {totalReviews === 1 ? 'review' : 'reviews'} across {activeDays} active {activeDays === 1
+      ? 'day'
+      : 'days'} in the last year.
   </p>
   {#if visibleDays.length > 0}
     <ul class="sr-only">
@@ -139,7 +139,7 @@
   <div bind:this={scrollEl} class="overflow-x-auto" aria-hidden="true">
     <div class="flex w-max gap-1.5 py-1 pr-3 pl-1">
       <div
-        class="grid grid-rows-7 gap-[3px] text-right text-[10px] leading-none text-ink-muted"
+        class="text-ink-muted grid grid-rows-7 gap-[3px] text-right text-[10px] leading-none"
         style="grid-auto-rows: 11px; margin-top: 16px"
       >
         {#each WEEKDAY_LABELS as label, i (i)}
@@ -148,7 +148,10 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <div class="grid grid-flow-col gap-[3px] text-[10px] text-ink-muted" style="grid-auto-columns: 11px">
+        <div
+          class="text-ink-muted grid grid-flow-col gap-[3px] text-[10px]"
+          style="grid-auto-columns: 11px"
+        >
           {#each monthLabels as label, i (i)}
             <span class="overflow-visible whitespace-nowrap">{label}</span>
           {/each}
@@ -158,8 +161,10 @@
           {#each weeks as week, i (i)}
             {#each week as cell (cell.key)}
               <div
-                class="h-[11px] w-[11px] rounded-[2px] {LEVEL_CLASSES[level(cell.count)]} {cell.key === todayKey
-                  ? 'ring-1 ring-accent ring-offset-1 ring-offset-paper'
+                class="h-[11px] w-[11px] rounded-[2px] {LEVEL_CLASSES[
+                  level(cell.count)
+                ]} {cell.key === todayKey
+                  ? 'ring-accent ring-offset-paper ring-1 ring-offset-1'
                   : ''}"
                 title="{cell.key}: {cell.count} {cell.count === 1 ? 'review' : 'reviews'}"
               ></div>
@@ -170,7 +175,10 @@
     </div>
   </div>
 
-  <div class="mt-2 flex items-center justify-end gap-1.5 text-[11px] text-ink-muted" aria-hidden="true">
+  <div
+    class="text-ink-muted mt-2 flex items-center justify-end gap-1.5 text-[11px]"
+    aria-hidden="true"
+  >
     <span>Less</span>
     {#each LEVEL_CLASSES as bg (bg)}
       <span class="h-[11px] w-[11px] rounded-[2px] {bg}"></span>

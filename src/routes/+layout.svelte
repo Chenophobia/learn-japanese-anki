@@ -57,9 +57,12 @@
 </script>
 
 {#if data.user}
-  <header class="sticky top-0 z-10 border-b border-hairline bg-surface">
-    <nav class="mx-auto flex w-full max-w-3xl items-center gap-1 p-2 sm:gap-2 sm:p-4" aria-label="Primary">
-      {#each links as link}
+  <header class="border-hairline bg-surface sticky top-0 z-10 border-b">
+    <nav
+      class="mx-auto flex w-full max-w-3xl items-center gap-1 p-2 sm:gap-2 sm:p-4"
+      aria-label="Primary"
+    >
+      {#each links as link (link.href)}
         {@const isActive = page.url.pathname === link.href}
         <!--
           The active indicator is an absolutely positioned bar, not a
@@ -72,15 +75,15 @@
         <a
           href={link.href}
           aria-current={isActive ? 'page' : undefined}
-          class="relative rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-black/5 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:px-3 dark:hover:bg-white/10 {isActive
-            ? 'font-semibold text-ink'
-            : 'font-medium text-ink-muted'}"
+          class="hover:text-ink focus-visible:ring-accent relative rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:outline-none sm:px-3 dark:hover:bg-white/10 {isActive
+            ? 'text-ink font-semibold'
+            : 'text-ink-muted font-medium'}"
         >
           {link.label}
           {#if isActive}
             <span
               aria-hidden="true"
-              class="pointer-events-none absolute inset-x-1.5 bottom-0.5 h-0.5 rounded-full bg-accent"
+              class="bg-accent pointer-events-none absolute inset-x-1.5 bottom-0.5 h-0.5 rounded-full"
             ></span>
           {/if}
         </a>
@@ -90,7 +93,7 @@
         <ThemeToggle theme={data.theme} />
         <form method="POST" action="/logout">
           <button
-            class="rounded-md px-2.5 py-2 text-sm text-ink-muted transition-colors hover:bg-black/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:hover:bg-white/10 sm:px-3"
+            class="text-ink-muted hover:text-ink focus-visible:ring-accent rounded-md px-2.5 py-2 text-sm transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:outline-none sm:px-3 dark:hover:bg-white/10"
           >
             Sign out
           </button>

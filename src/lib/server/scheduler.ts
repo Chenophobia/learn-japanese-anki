@@ -1,4 +1,12 @@
-import { fsrs, generatorParameters, createEmptyCard, State, Rating, type Card, type Grade } from 'ts-fsrs';
+import {
+  fsrs,
+  generatorParameters,
+  createEmptyCard,
+  State,
+  Rating,
+  type Card,
+  type Grade
+} from 'ts-fsrs';
 
 const scheduler = fsrs(generatorParameters({ enable_fuzz: true }));
 
@@ -56,7 +64,12 @@ export function newUserCard(now: Date): UserCardRow {
   return toRow(createEmptyCard(now));
 }
 
-const LABELS = { [Rating.Again]: 'Again', [Rating.Hard]: 'Hard', [Rating.Good]: 'Good', [Rating.Easy]: 'Easy' } as const;
+const LABELS = {
+  [Rating.Again]: 'Again',
+  [Rating.Hard]: 'Hard',
+  [Rating.Good]: 'Good',
+  [Rating.Easy]: 'Easy'
+} as const;
 const GRADES: Grade[] = [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy];
 
 export function previewRatings(row: UserCardRow, now: Date) {

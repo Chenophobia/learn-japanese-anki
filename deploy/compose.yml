@@ -1,0 +1,20 @@
+# Pull-based deployment: runs the image CI publishes to GHCR instead of
+# building from source on the host. The root docker-compose.yml (build: .)
+# remains the build-from-source fallback.
+#
+# Paths are relative to this file, so ../data and ../.env are the same data
+# directory and env file the root compose file uses — switching between the
+# two never touches state.
+name: learn-japanese
+services:
+  app:
+    image: ghcr.io/chenophobia/learn-japanese-anki:latest
+    container_name: learn-japanese
+    ports:
+      - '127.0.0.1:3001:3001'
+    env_file: ../.env
+    environment:
+      DATA_DIR: /app/data
+    volumes:
+      - ../data:/app/data
+    restart: unless-stopped

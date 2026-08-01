@@ -123,15 +123,19 @@
 </svelte:head>
 
 {#if data.item}
-  <p class="mb-3 flex items-baseline justify-between gap-3 text-sm text-ink-muted">
+  <p class="text-ink-muted mb-3 flex items-baseline justify-between gap-3 text-sm">
     <span class="flex min-w-0 items-baseline gap-1.5">
       <span class="truncate">{data.item.unitTitle}</span>
       {#if data.item.isNew}
-        <span class="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">New</span>
+        <span class="bg-accent/10 text-accent shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+          >New</span
+        >
       {/if}
     </span>
     <span class="shrink-0 tabular-nums">
-      <RollingNumber value={data.counts.due} /> due · <RollingNumber value={data.counts.newAvailable} /> new
+      <RollingNumber value={data.counts.due} /> due · <RollingNumber
+        value={data.counts.newAvailable}
+      /> new
     </span>
   </p>
 
@@ -167,7 +171,7 @@
        when the card content is short; -mx/px cancels the page gutter so the
        bar reaches the viewport edges. -->
   <div
-    class="sticky bottom-0 -mx-4 mt-6 border-t border-hairline bg-paper px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6"
+    class="border-hairline bg-paper sticky bottom-0 -mx-4 mt-6 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6"
   >
     {#if revealed}
       <form method="POST" action="?/rate" use:enhance={handleRate} class="grid grid-cols-4 gap-2">
@@ -178,7 +182,7 @@
             name="rating"
             value={preview.rating}
             disabled={submitting}
-            class="flex flex-col items-center gap-0.5 rounded-lg py-3 font-semibold text-paper transition-[opacity,transform] hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:opacity-60 {RATING_BG[
+            class="text-paper focus-visible:ring-accent focus-visible:ring-offset-paper flex flex-col items-center gap-0.5 rounded-lg py-3 font-semibold transition-[opacity,transform] hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] disabled:opacity-60 {RATING_BG[
               preview.rating
             ]}"
           >
@@ -190,7 +194,7 @@
     {:else}
       <button
         onclick={() => (revealed = true)}
-        class="w-full rounded-lg bg-ink py-3.5 text-base font-medium text-paper transition-[opacity,transform] hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+        class="bg-ink text-paper focus-visible:ring-accent focus-visible:ring-offset-paper w-full rounded-lg py-3.5 text-base font-medium transition-[opacity,transform] hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97]"
       >
         Show answer
         <span class="ml-1.5 hidden text-sm opacity-70 sm:inline">(space)</span>
@@ -198,7 +202,9 @@
     {/if}
   </div>
 {:else}
-  <div class="flex flex-col items-center gap-3 rounded-2xl border border-hairline bg-surface p-10 text-center">
+  <div
+    class="border-hairline bg-surface flex flex-col items-center gap-3 rounded-2xl border p-10 text-center"
+  >
     <svg
       viewBox="0 0 24 24"
       fill="none"
@@ -207,32 +213,33 @@
       stroke-linecap="round"
       stroke-linejoin="round"
       aria-hidden="true"
-      class="h-10 w-10 text-good"
+      class="text-good h-10 w-10"
     >
       <circle cx="12" cy="12" r="9" />
       <path d="m8.5 12.5 2.5 2.5 4.5-5" />
     </svg>
     {#if data.curriculumFinished}
-      <p class="text-xl font-semibold text-ink">Every card, learned</p>
-      <p class="max-w-sm text-sm text-ink-muted">
-        You've worked through the whole curriculum. Reviews will keep resurfacing on schedule — check back as they
-        come due.
+      <p class="text-ink text-xl font-semibold">Every card, learned</p>
+      <p class="text-ink-muted max-w-sm text-sm">
+        You've worked through the whole curriculum. Reviews will keep resurfacing on schedule —
+        check back as they come due.
       </p>
     {:else if nextCardTime}
-      <p class="text-xl font-semibold text-ink">Next card at {nextCardTime}</p>
-      <p class="max-w-sm text-sm text-ink-muted">
-        Nothing's due right now and today's new cards are finished, but a card you already studied comes due again at
+      <p class="text-ink text-xl font-semibold">Next card at {nextCardTime}</p>
+      <p class="text-ink-muted max-w-sm text-sm">
+        Nothing's due right now and today's new cards are finished, but a card you already studied
+        comes due again at
         {nextCardTime}. Check back then.
       </p>
     {:else}
-      <p class="text-xl font-semibold text-ink">Done for now</p>
-      <p class="max-w-sm text-sm text-ink-muted">
+      <p class="text-ink text-xl font-semibold">Done for now</p>
+      <p class="text-ink-muted max-w-sm text-sm">
         Nothing's due and today's new cards are finished. Come back tomorrow for more.
       </p>
     {/if}
     <a
       href="/"
-      class="mt-2 rounded-sm text-sm font-medium text-accent underline underline-offset-2 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      class="text-accent focus-visible:ring-accent mt-2 rounded-sm text-sm font-medium underline underline-offset-2 hover:opacity-80 focus-visible:ring-2 focus-visible:outline-none"
     >
       Back to the map
     </a>

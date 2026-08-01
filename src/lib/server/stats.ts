@@ -16,7 +16,6 @@ export type Stats = {
   reviewsByDay: Array<{ date: string; count: number }>; // the heatmap grid's date range, only non-zero days
 };
 
-
 /** `YYYY-MM-DD` for the UTC calendar day containing `date`. */
 function isoDay(date: Date): string {
   return utcDayStart(date).toISOString().slice(0, 10);
@@ -73,8 +72,7 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
   // Saturday on/after today, so between 0 and 6 of its columns are future
   // days that can never hold a review — the windowed streak therefore tops
   // out below HEATMAP_WINDOW_DAYS, and that is the real ceiling below.
-  const pastDaysInWindow =
-    (Date.parse(isoDay(now)) - Date.parse(window.start)) / 86_400_000 + 1;
+  const pastDaysInWindow = (Date.parse(isoDay(now)) - Date.parse(window.start)) / 86_400_000 + 1;
 
   const dayCol = sql<string>`substr(${reviewLogs.reviewedAt}, 1, 10)`;
   const byDay = db
@@ -117,7 +115,11 @@ export function userStats(db: Db, userId: number, now: Date = new Date()): Stats
 }
 
 /** Every distinct UTC day (unbounded, no time-window filter) the user has ever reviewed on. */
-function allActivityDays(db: Db, userId: number, dayCol: ReturnType<typeof sql<string>>): Set<string> {
+function allActivityDays(
+  db: Db,
+  userId: number,
+  dayCol: ReturnType<typeof sql<string>>
+): Set<string> {
   const rows = db
     .select({ date: dayCol })
     .from(reviewLogs)

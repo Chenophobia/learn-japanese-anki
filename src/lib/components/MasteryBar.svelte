@@ -15,13 +15,13 @@
 </script>
 
 <div
-  class="flex h-1.5 w-full overflow-hidden rounded-full bg-hairline"
+  class="bg-hairline flex h-1.5 w-full overflow-hidden rounded-full"
   role="img"
   aria-label="{label}: {mature} mature, {young} young, {Math.max(
     0,
     total - introduced
   )} not started, of {total} cards"
 >
-  <div class="h-full bg-accent" style="width: {pct(mature)}%"></div>
-  <div class="h-full bg-accent/40" style="width: {pct(young)}%"></div>
+  <div class="bg-accent h-full" style="width: {pct(mature)}%"></div>
+  <div class="bg-accent/40 h-full" style="width: {pct(young)}%"></div>
 </div>

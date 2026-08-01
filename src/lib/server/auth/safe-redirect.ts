@@ -5,6 +5,7 @@
 // redirect. A value that needs a control character stripped to look safe is
 // not a value to honor, so any such value is rejected outright rather than
 // sanitized.
+// eslint-disable-next-line no-control-regex -- matching control characters is this pattern's entire job
 const CONTROL_CHAR_PATTERN = /[\x00-\x1F\x7F]/;
 
 /**

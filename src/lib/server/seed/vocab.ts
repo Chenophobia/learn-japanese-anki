@@ -1,6 +1,11 @@
 import type { SeedUnit, SeedCard } from './types';
 
-const vocab = (word: string, reading: string, meaning: string, example_sentence: string): SeedCard => ({
+const vocab = (
+  word: string,
+  reading: string,
+  meaning: string,
+  example_sentence: string
+): SeedCard => ({
   front: { word },
   back: { reading, meaning, example_sentence }
 });
@@ -15,13 +20,23 @@ const week13: SeedCard[] = [
   vocab('洗う', 'あらう', 'to wash', '手を洗います。(I wash my hands.)'),
   vocab('作る', 'つくる', 'to make', '晩ご飯を作ります。(I make dinner.)'),
   vocab('掃除する', 'そうじする', 'to clean', '部屋を掃除します。(I clean my room.)'),
-  vocab('洗濯する', 'せんたくする', 'to do laundry', '週末に洗濯します。(I do laundry on the weekend.)'),
+  vocab(
+    '洗濯する',
+    'せんたくする',
+    'to do laundry',
+    '週末に洗濯します。(I do laundry on the weekend.)'
+  ),
   vocab('料理する', 'りょうりする', 'to cook', '毎日料理します。(I cook every day.)'),
   vocab('出かける', 'でかける', 'to go out', '友達と出かけます。(I go out with a friend.)'),
-  vocab('帰る', 'かえる', 'to return home', '六時に家に帰ります。(I return home at six o\'clock.)'),
+  vocab('帰る', 'かえる', 'to return home', "六時に家に帰ります。(I return home at six o'clock.)"),
   vocab('休む', 'やすむ', 'to rest', '日曜日は休みます。(I rest on Sunday.)'),
   vocab('働く', 'はたらく', 'to work', '会社で働きます。(I work at a company.)'),
-  vocab('勉強する', 'べんきょうする', 'to study', '毎日日本語を勉強します。(I study Japanese every day.)')
+  vocab(
+    '勉強する',
+    'べんきょうする',
+    'to study',
+    '毎日日本語を勉強します。(I study Japanese every day.)'
+  )
 ];
 
 const week14: SeedCard[] = [
@@ -30,10 +45,20 @@ const week14: SeedCard[] = [
   vocab('昨日', 'きのう', 'yesterday', '昨日映画を見ました。(Yesterday I watched a movie.)'),
   vocab('今週', 'こんしゅう', 'this week', '今週は忙しいです。(This week is busy.)'),
   vocab('来週', 'らいしゅう', 'next week', '来週旅行に行きます。(Next week I will go on a trip.)'),
-  vocab('先週', 'せんしゅう', 'last week', '先週病院に行きました。(Last week I went to the hospital.)'),
+  vocab(
+    '先週',
+    'せんしゅう',
+    'last week',
+    '先週病院に行きました。(Last week I went to the hospital.)'
+  ),
   vocab('今月', 'こんげつ', 'this month', '今月試験があります。(This month there is an exam.)'),
   vocab('来月', 'らいげつ', 'next month', '来月誕生日です。(Next month is my birthday.)'),
-  vocab('今年', 'ことし', 'this year', '今年日本語を勉強しています。(This year I am studying Japanese.)'),
+  vocab(
+    '今年',
+    'ことし',
+    'this year',
+    '今年日本語を勉強しています。(This year I am studying Japanese.)'
+  ),
   vocab('来年', 'らいねん', 'next year', '来年日本に行きます。(Next year I will go to Japan.)'),
   vocab('毎日', 'まいにち', 'every day', '毎日勉強します。(I study every day.)'),
   vocab('毎週', 'まいしゅう', 'every week', '毎週映画を見ます。(I watch a movie every week.)'),
@@ -47,8 +72,8 @@ const week15: SeedCard[] = [
   vocab('ご飯', 'ごはん', 'rice/meal', '毎朝ご飯を食べます。(I eat rice every morning.)'),
   vocab('パン', 'パン', 'bread', '朝はパンを食べます。(In the morning I eat bread.)'),
   vocab('肉', 'にく', 'meat', '肉が好きです。(I like meat.)'),
-  vocab('魚', 'さかな', 'fish', '魚は食べません。(I don\'t eat fish.)'),
-  vocab('野菜', 'やさい', 'vegetables', '野菜を食べましょう。(Let\'s eat vegetables.)'),
+  vocab('魚', 'さかな', 'fish', "魚は食べません。(I don't eat fish.)"),
+  vocab('野菜', 'やさい', 'vegetables', "野菜を食べましょう。(Let's eat vegetables.)"),
   vocab('果物', 'くだもの', 'fruit', '果物が好きです。(I like fruit.)'),
   vocab('卵', 'たまご', 'egg', '卵を一つください。(One egg, please.)'),
   vocab('牛乳', 'ぎゅうにゅう', 'milk', '牛乳を飲みます。(I drink milk.)'),
@@ -67,12 +92,27 @@ const week16: SeedCard[] = [
   vocab('高い', 'たかい', 'expensive', 'このかばんは高いです。(This bag is expensive.)'),
   vocab('安い', 'やすい', 'cheap', 'この店は安いです。(This shop is cheap.)'),
   vocab('払う', 'はらう', 'to pay', 'クレジットカードで払います。(I will pay by credit card.)'),
-  vocab('買い物', 'かいもの', 'shopping', 'デパートで買い物します。(I shop at the department store.)'),
+  vocab(
+    '買い物',
+    'かいもの',
+    'shopping',
+    'デパートで買い物します。(I shop at the department store.)'
+  ),
   vocab('財布', 'さいふ', 'wallet', '財布を忘れました。(I forgot my wallet.)'),
-  vocab('クレジットカード', 'クレジットカード', 'credit card', 'クレジットカードを使います。(I use a credit card.)'),
+  vocab(
+    'クレジットカード',
+    'クレジットカード',
+    'credit card',
+    'クレジットカードを使います。(I use a credit card.)'
+  ),
   vocab('レシート', 'レシート', 'receipt', 'レシートをください。(Please give me the receipt.)'),
   vocab('〜円', 'えん', 'yen', '百円ください。(100 yen, please.)'),
-  vocab('一つ/二つ/三つ', 'ひとつ/ふたつ/みっつ', 'counter: things', '卵を一つください。(One egg, please.)'),
+  vocab(
+    '一つ/二つ/三つ',
+    'ひとつ/ふたつ/みっつ',
+    'counter: things',
+    '卵を一つください。(One egg, please.)'
+  ),
   vocab('〜枚', 'まい', 'flat things', 'レシートを一枚ください。(One receipt, please.)'),
   vocab('〜本', 'ほん', 'long thin things', 'ペンを一本ください。(One pen, please.)'),
   vocab('〜杯', 'はい', 'cups/glasses', 'コーヒーを一杯ください。(One cup of coffee, please.)'),
@@ -88,13 +128,28 @@ const week17: SeedCard[] = [
   vocab('空港', 'くうこう', 'airport', '空港まで行きます。(I will go to the airport.)'),
   vocab('右', 'みぎ', 'right', '右に曲がってください。(Please turn right.)'),
   vocab('左', 'ひだり', 'left', '左に曲がってください。(Please turn left.)'),
-  vocab('まっすぐ', 'まっすぐ', 'straight ahead', 'まっすぐ行ってください。(Please go straight ahead.)'),
+  vocab(
+    'まっすぐ',
+    'まっすぐ',
+    'straight ahead',
+    'まっすぐ行ってください。(Please go straight ahead.)'
+  ),
   vocab('曲がる', 'まがる', 'to turn', '次の角を曲がります。(I will turn at the next corner.)'),
   vocab('乗る', 'のる', 'to get on / ride', '電車に乗ります。(I get on the train.)'),
   vocab('降りる', 'おりる', 'to get off', '駅で降ります。(I get off at the station.)'),
-  vocab('乗り換える', 'のりかえる', 'to transfer trains', '駅で乗り換えます。(I transfer trains at the station.)'),
+  vocab(
+    '乗り換える',
+    'のりかえる',
+    'to transfer trains',
+    '駅で乗り換えます。(I transfer trains at the station.)'
+  ),
   vocab('切符', 'きっぷ', 'ticket', '切符を買います。(I buy a ticket.)'),
-  vocab('〜番線', 'ばんせん', 'platform number', '三番線から出ます。(It departs from platform three.)'),
+  vocab(
+    '〜番線',
+    'ばんせん',
+    'platform number',
+    '三番線から出ます。(It departs from platform three.)'
+  ),
   vocab('出口', 'でぐち', 'exit', '出口はどこですか。(Where is the exit?)')
 ];
 
@@ -102,16 +157,36 @@ const week18: SeedCard[] = [
   vocab('家族', 'かぞく', 'family', '家族は四人です。(My family has four people.)'),
   vocab('父', 'ちち', 'my father', '父は会社員です。(My father is a company employee.)'),
   vocab('母', 'はは', 'my mother', '母は先生です。(My mother is a teacher.)'),
-  vocab('お父さん', 'おとうさん', 'someone\'s father', 'お父さんは元気ですか。(Is your father well?)'),
-  vocab('お母さん', 'おかあさん', 'someone\'s mother', 'お母さんはやさしいです。(Your mother is kind.)'),
+  vocab(
+    'お父さん',
+    'おとうさん',
+    "someone's father",
+    'お父さんは元気ですか。(Is your father well?)'
+  ),
+  vocab(
+    'お母さん',
+    'おかあさん',
+    "someone's mother",
+    'お母さんはやさしいです。(Your mother is kind.)'
+  ),
   vocab('兄', 'あに', 'older brother', '兄は医者です。(My older brother is a doctor.)'),
   vocab('姉', 'あね', 'older sister', '姉は学生です。(My older sister is a student.)'),
-  vocab('弟', 'おとうと', 'younger brother', '弟は学校に行きます。(My younger brother goes to school.)'),
+  vocab(
+    '弟',
+    'おとうと',
+    'younger brother',
+    '弟は学校に行きます。(My younger brother goes to school.)'
+  ),
   vocab('妹', 'いもうと', 'younger sister', '妹は音楽が好きです。(My younger sister likes music.)'),
   vocab('友達', 'ともだち', 'friend', '友達と話します。(I talk with my friend.)'),
   vocab('彼氏', 'かれし', 'boyfriend', '彼氏に会います。(I will meet my boyfriend.)'),
   vocab('彼女', 'かのじょ', 'girlfriend/she', '彼女は優しいです。(She is kind.)'),
-  vocab('同僚', 'どうりょう', 'colleague', '同僚と昼ご飯を食べます。(I eat lunch with my colleague.)'),
+  vocab(
+    '同僚',
+    'どうりょう',
+    'colleague',
+    '同僚と昼ご飯を食べます。(I eat lunch with my colleague.)'
+  ),
   vocab('上司', 'じょうし', 'boss', '上司に相談します。(I will consult with my boss.)'),
   vocab('部下', 'ぶか', 'subordinate', '部下に頼みます。(I will ask my subordinate.)'),
   vocab('知り合い', 'しりあい', 'acquaintance', '彼は知り合いです。(He is an acquaintance.)')
@@ -142,14 +217,34 @@ const week20: SeedCard[] = [
   vocab('台所', 'だいどころ', 'kitchen', '台所で料理します。(I cook in the kitchen.)'),
   vocab('お風呂', 'おふろ', 'bath', 'お風呂に入ります。(I take a bath.)'),
   vocab('トイレ', 'トイレ', 'toilet', 'トイレはどこですか。(Where is the toilet?)'),
-  vocab('玄関', 'げんかん', 'entrance hall', '玄関で靴を脱ぎます。(I take off my shoes at the entrance.)'),
+  vocab(
+    '玄関',
+    'げんかん',
+    'entrance hall',
+    '玄関で靴を脱ぎます。(I take off my shoes at the entrance.)'
+  ),
   vocab('窓', 'まど', 'window', '窓を開けます。(I open the window.)'),
   vocab('ドア', 'ドア', 'door', 'ドアを閉めます。(I close the door.)'),
   vocab('机', 'つくえ', 'desk', '机の上に本があります。(There is a book on the desk.)'),
   vocab('椅子', 'いす', 'chair', '椅子に座ります。(I sit on the chair.)'),
-  vocab('冷蔵庫', 'れいぞうこ', 'refrigerator', '冷蔵庫に卵があります。(There are eggs in the refrigerator.)'),
-  vocab('洗濯機', 'せんたくき', 'washing machine', '洗濯機で洗濯します。(I do laundry with the washing machine.)'),
-  vocab('エアコン', 'エアコン', 'air conditioner', 'エアコンをつけます。(I turn on the air conditioner.)'),
+  vocab(
+    '冷蔵庫',
+    'れいぞうこ',
+    'refrigerator',
+    '冷蔵庫に卵があります。(There are eggs in the refrigerator.)'
+  ),
+  vocab(
+    '洗濯機',
+    'せんたくき',
+    'washing machine',
+    '洗濯機で洗濯します。(I do laundry with the washing machine.)'
+  ),
+  vocab(
+    'エアコン',
+    'エアコン',
+    'air conditioner',
+    'エアコンをつけます。(I turn on the air conditioner.)'
+  ),
   vocab('電気', 'でんき', 'electricity/lights', '電気を消します。(I turn off the lights.)'),
   vocab('鍵', 'かぎ', 'key/lock', '鍵をかけます。(I lock the door.)'),
   vocab('隣', 'となり', 'next door/neighbour', '隣の部屋にいます。(I am in the next room.)')
@@ -183,7 +278,12 @@ const week22: SeedCard[] = [
   vocab('軽い', 'かるい', 'light', 'このノートは軽いです。(This notebook is light.)'),
   vocab('難しい', 'むずかしい', 'difficult', '日本語は難しいです。(Japanese is difficult.)'),
   vocab('やさしい', 'やさしい', 'easy/kind', 'この問題はやさしいです。(This problem is easy.)'),
-  vocab('面白い', 'おもしろい', 'interesting/funny', 'この映画は面白いです。(This movie is interesting.)'),
+  vocab(
+    '面白い',
+    'おもしろい',
+    'interesting/funny',
+    'この映画は面白いです。(This movie is interesting.)'
+  ),
   vocab('つまらない', 'つまらない', 'boring', 'この本はつまらないです。(This book is boring.)'),
   vocab('便利', 'べんり', 'convenient — na-adj', 'このアプリは便利です。(This app is convenient.)'),
   vocab('不便', 'ふべん', 'inconvenient', 'この駅は不便です。(This station is inconvenient.)'),
@@ -205,10 +305,25 @@ const week23: SeedCard[] = [
   vocab('宿題', 'しゅくだい', 'homework', '宿題をします。(I will do my homework.)'),
   vocab('試験', 'しけん', 'exam', '試験を受けます。(I will take the exam.)'),
   vocab('成績', 'せいせき', 'grades', '成績がいいです。(My grades are good.)'),
-  vocab('卒業する', 'そつぎょうする', 'to graduate', '大学を卒業します。(I will graduate from university.)'),
-  vocab('入学する', 'にゅうがくする', 'to enter school', '大学に入学します。(I will enter university.)'),
+  vocab(
+    '卒業する',
+    'そつぎょうする',
+    'to graduate',
+    '大学を卒業します。(I will graduate from university.)'
+  ),
+  vocab(
+    '入学する',
+    'にゅうがくする',
+    'to enter school',
+    '大学に入学します。(I will enter university.)'
+  ),
   vocab('遅刻する', 'ちこくする', 'to be late', '学校に遅刻しました。(I was late for school.)'),
-  vocab('欠席する', 'けっせきする', 'to be absent', '授業を欠席しました。(I was absent from class.)'),
+  vocab(
+    '欠席する',
+    'けっせきする',
+    'to be absent',
+    '授業を欠席しました。(I was absent from class.)'
+  ),
   vocab('予定', 'よてい', 'schedule/plans', '明日の予定があります。(I have plans for tomorrow.)')
 ];
 
@@ -219,14 +334,49 @@ const week24: SeedCard[] = [
   vocab('図書館', 'としょかん', 'library', '図書館で本を読みます。(I read a book at the library.)'),
   vocab('郵便局', 'ゆうびんきょく', 'post office', '郵便局に行きます。(I go to the post office.)'),
   vocab('銀行', 'ぎんこう', 'bank', '銀行でお金をおろします。(I withdraw money at the bank.)'),
-  vocab('デパート', 'デパート', 'department store', 'デパートで買い物します。(I shop at the department store.)'),
+  vocab(
+    'デパート',
+    'デパート',
+    'department store',
+    'デパートで買い物します。(I shop at the department store.)'
+  ),
   vocab('旅行', 'りょこう', 'travel', '来週旅行に行きます。(Next week I will go on a trip.)'),
-  vocab('予約する', 'よやくする', 'to make a reservation', 'レストランを予約します。(I will make a reservation at the restaurant.)'),
-  vocab('入場料', 'にゅうじょうりょう', 'admission fee', '入場料は千円です。(The admission fee is 1,000 yen.)'),
-  vocab('営業時間', 'えいぎょうじかん', 'business hours', '営業時間は九時から五時までです。(Business hours are from nine to five.)'),
-  vocab('定休日', 'ていきゅうび', 'regular closing day', '定休日は月曜日です。(The regular closing day is Monday.)'),
-  vocab('混む', 'こむ', 'to be crowded', 'この店はいつも混んでいます。(This shop is always crowded.)'),
-  vocab('並ぶ', 'ならぶ', 'to queue up', 'レストランの前に並びます。(I line up in front of the restaurant.)')
+  vocab(
+    '予約する',
+    'よやくする',
+    'to make a reservation',
+    'レストランを予約します。(I will make a reservation at the restaurant.)'
+  ),
+  vocab(
+    '入場料',
+    'にゅうじょうりょう',
+    'admission fee',
+    '入場料は千円です。(The admission fee is 1,000 yen.)'
+  ),
+  vocab(
+    '営業時間',
+    'えいぎょうじかん',
+    'business hours',
+    '営業時間は九時から五時までです。(Business hours are from nine to five.)'
+  ),
+  vocab(
+    '定休日',
+    'ていきゅうび',
+    'regular closing day',
+    '定休日は月曜日です。(The regular closing day is Monday.)'
+  ),
+  vocab(
+    '混む',
+    'こむ',
+    'to be crowded',
+    'この店はいつも混んでいます。(This shop is always crowded.)'
+  ),
+  vocab(
+    '並ぶ',
+    'ならぶ',
+    'to queue up',
+    'レストランの前に並びます。(I line up in front of the restaurant.)'
+  )
 ];
 
 const week25: SeedCard[] = [
@@ -237,33 +387,98 @@ const week25: SeedCard[] = [
   vocab('寂しい', 'さびしい', 'lonely', '一人で寂しいです。(I am lonely by myself.)'),
   vocab('楽しい', 'たのしい', 'fun', '旅行は楽しいです。(The trip is fun.)'),
   vocab('退屈', 'たいくつ', 'bored — na-adj', 'この授業は退屈です。(This class is boring.)'),
-  vocab('緊張する', 'きんちょうする', 'to be nervous', '試験の前に緊張します。(I get nervous before the exam.)'),
-  vocab('安心する', 'あんしんする', 'to feel relieved', '結果を聞いて安心しました。(I felt relieved to hear the result.)'),
-  vocab('心配する', 'しんぱいする', 'to worry', '天気が心配です。(I am worried about the weather.)'),
-  vocab('びっくりする', 'びっくりする', 'to be surprised', 'そのニュースにびっくりしました。(I was surprised by that news.)'),
-  vocab('困る', 'こまる', 'to be in trouble', 'お金がなくて困っています。(I am in trouble because I have no money.)'),
+  vocab(
+    '緊張する',
+    'きんちょうする',
+    'to be nervous',
+    '試験の前に緊張します。(I get nervous before the exam.)'
+  ),
+  vocab(
+    '安心する',
+    'あんしんする',
+    'to feel relieved',
+    '結果を聞いて安心しました。(I felt relieved to hear the result.)'
+  ),
+  vocab(
+    '心配する',
+    'しんぱいする',
+    'to worry',
+    '天気が心配です。(I am worried about the weather.)'
+  ),
+  vocab(
+    'びっくりする',
+    'びっくりする',
+    'to be surprised',
+    'そのニュースにびっくりしました。(I was surprised by that news.)'
+  ),
+  vocab(
+    '困る',
+    'こまる',
+    'to be in trouble',
+    'お金がなくて困っています。(I am in trouble because I have no money.)'
+  ),
   vocab('怒る', 'おこる', 'to get angry', '先生が怒りました。(The teacher got angry.)'),
   vocab('泣く', 'なく', 'to cry', '悲しくて泣きました。(I cried because I was sad.)'),
-  vocab('笑う', 'わらう', 'to laugh/smile', '面白くて笑いました。(I laughed because it was funny.)'),
+  vocab(
+    '笑う',
+    'わらう',
+    'to laugh/smile',
+    '面白くて笑いました。(I laughed because it was funny.)'
+  ),
   vocab('愛する', 'あいする', 'to love', '家族を愛しています。(I love my family.)')
 ];
 
 const week26: SeedCard[] = [
   vocab('たくさん', 'たくさん', 'many', '水をたくさん飲みます。(I drink a lot of water.)'),
   vocab('少し', 'すこし', 'a little', '少し疲れました。(I am a little tired.)'),
-  vocab('ちょっと', 'ちょっと', 'a little, casual', 'ちょっと待ってください。(Please wait a moment.)'),
+  vocab(
+    'ちょっと',
+    'ちょっと',
+    'a little, casual',
+    'ちょっと待ってください。(Please wait a moment.)'
+  ),
   vocab('全部', 'ぜんぶ', 'all/everything', '全部食べました。(I ate everything.)'),
-  vocab('全然〜ない', 'ぜんぜん〜ない', 'not at all', '全然疲れていません。(I am not tired at all.)'),
-  vocab('あまり〜ない', 'あまり〜ない', 'not very much', 'あまり忙しくないです。(I am not very busy.)'),
+  vocab(
+    '全然〜ない',
+    'ぜんぜん〜ない',
+    'not at all',
+    '全然疲れていません。(I am not tired at all.)'
+  ),
+  vocab(
+    'あまり〜ない',
+    'あまり〜ない',
+    'not very much',
+    'あまり忙しくないです。(I am not very busy.)'
+  ),
   vocab('とても', 'とても', 'very', 'とても暑いです。(It is very hot.)'),
   vocab('かなり', 'かなり', 'quite', 'かなり難しいです。(It is quite difficult.)'),
-  vocab('だいたい', 'だいたい', 'approximately', 'だいたい分かりました。(I understood approximately.)'),
+  vocab(
+    'だいたい',
+    'だいたい',
+    'approximately',
+    'だいたい分かりました。(I understood approximately.)'
+  ),
   vocab('もっと', 'もっと', 'more', 'もっと食べたいです。(I want to eat more.)'),
-  vocab('まだ', 'まだ', 'still/not yet', 'まだ宿題をしていません。(I haven\'t done my homework yet.)'),
+  vocab(
+    'まだ',
+    'まだ',
+    'still/not yet',
+    "まだ宿題をしていません。(I haven't done my homework yet.)"
+  ),
   vocab('ほとんど', 'ほとんど', 'almost/mostly', 'ほとんど終わりました。(It is almost finished.)'),
   vocab('特に', 'とくに', 'especially', '特に忙しいです。(I am especially busy.)'),
-  vocab('やはり/やっぱり', 'やはり/やっぱり', 'as expected', 'やっぱり日本語は難しいです。(As expected, Japanese is difficult.)'),
-  vocab('なかなか', 'なかなか', 'quite/not easily', '日本語はなかなか上手になりません。(Japanese doesn\'t easily get better.)')
+  vocab(
+    'やはり/やっぱり',
+    'やはり/やっぱり',
+    'as expected',
+    'やっぱり日本語は難しいです。(As expected, Japanese is difficult.)'
+  ),
+  vocab(
+    'なかなか',
+    'なかなか',
+    'quite/not easily',
+    "日本語はなかなか上手になりません。(Japanese doesn't easily get better.)"
+  )
 ];
 
 const week27: SeedCard[] = [
@@ -276,9 +491,24 @@ const week27: SeedCard[] = [
   vocab('出る', 'でる', 'exit/leave', '部屋を出ます。(I leave the room.)'),
   vocab('渡る', 'わたる', 'cross', '道を渡ります。(I cross the road.)'),
   vocab('渡す', 'わたす', 'hand over', '本を渡します。(I hand over the book.)'),
-  vocab('あげる', 'あげる', 'give-to other', '友達にプレゼントをあげました。(I gave my friend a present.)'),
-  vocab('もらう', 'もらう', 'receive', '友達にプレゼントをもらいました。(I received a present from my friend.)'),
-  vocab('くれる', 'くれる', 'give-to me', '友達がプレゼントをくれました。(My friend gave me a present.)'),
+  vocab(
+    'あげる',
+    'あげる',
+    'give-to other',
+    '友達にプレゼントをあげました。(I gave my friend a present.)'
+  ),
+  vocab(
+    'もらう',
+    'もらう',
+    'receive',
+    '友達にプレゼントをもらいました。(I received a present from my friend.)'
+  ),
+  vocab(
+    'くれる',
+    'くれる',
+    'give-to me',
+    '友達がプレゼントをくれました。(My friend gave me a present.)'
+  ),
   vocab('貸す', 'かす', 'lend', '本を貸します。(I will lend the book.)'),
   vocab('借りる', 'かりる', 'borrow', '本を借ります。(I will borrow the book.)'),
   vocab('返す', 'かえす', 'return item', '本を返します。(I will return the book.)'),
@@ -290,7 +520,12 @@ const week28: SeedCard[] = [
   vocab('紹介する', 'しょうかいする', 'introduce', '友達を紹介します。(I introduce my friend.)'),
   vocab('確認する', 'かくにんする', 'confirm', '予定を確認します。(I confirm the schedule.)'),
   vocab('連絡する', 'れんらくする', 'contact', '友達に連絡します。(I contact my friend.)'),
-  vocab('約束する', 'やくそくする', 'promise', '友達と約束します。(I make a promise with my friend.)'),
+  vocab(
+    '約束する',
+    'やくそくする',
+    'promise',
+    '友達と約束します。(I make a promise with my friend.)'
+  ),
   vocab('比べる', 'くらべる', 'compare', '二つを比べます。(I compare the two.)'),
   vocab('選ぶ', 'えらぶ', 'choose', '本を選びます。(I choose a book.)'),
   vocab('決める', 'きめる', 'decide', '予定を決めます。(I decide the schedule.)'),
@@ -307,13 +542,23 @@ const week28: SeedCard[] = [
 const week29: SeedCard[] = [
   vocab('理由', 'りゆう', 'reason', '理由を説明します。(I will explain the reason.)'),
   vocab('方法', 'ほうほう', 'method', '勉強の方法を考えます。(I think about a study method.)'),
-  vocab('場合', 'ばあい', 'case/situation', 'その場合は連絡してください。(In that case, please contact me.)'),
+  vocab(
+    '場合',
+    'ばあい',
+    'case/situation',
+    'その場合は連絡してください。(In that case, please contact me.)'
+  ),
   vocab('問題', 'もんだい', 'problem', 'この問題は難しいです。(This problem is difficult.)'),
-  vocab('答え', 'こたえ', 'answer', '答えが分かりません。(I don\'t know the answer.)'),
-  vocab('意味', 'いみ', 'meaning', 'この言葉の意味が分かりません。(I don\'t understand the meaning of this word.)'),
+  vocab('答え', 'こたえ', 'answer', "答えが分かりません。(I don't know the answer.)"),
+  vocab(
+    '意味',
+    'いみ',
+    'meaning',
+    "この言葉の意味が分かりません。(I don't understand the meaning of this word.)"
+  ),
   vocab('目的', 'もくてき', 'purpose', '旅行の目的は何ですか。(What is the purpose of the trip?)'),
   vocab('経験', 'けいけん', 'experience', 'いい経験になりました。(It became a good experience.)'),
-  vocab('機会', 'きかい', 'opportunity', 'いい機会です。(It\'s a good opportunity.)'),
+  vocab('機会', 'きかい', 'opportunity', "いい機会です。(It's a good opportunity.)"),
   vocab('準備', 'じゅんび', 'preparation', '旅行の準備をします。(I prepare for the trip.)'),
   vocab('練習', 'れんしゅう', 'practice', '毎日練習します。(I practice every day.)'),
   vocab('生活', 'せいかつ', 'life/lifestyle', '日本での生活は楽しいです。(Life in Japan is fun.)'),
@@ -324,35 +569,100 @@ const week29: SeedCard[] = [
 ];
 
 const week30: SeedCard[] = [
-  vocab('に', 'に', 'to/at/for', '七時に起きます。(I wake up at seven o\'clock.)'),
-  vocab('で', 'で', 'at, location of action / by means of', '駅で待ちます。(I will wait at the station.)'),
-  vocab('から', 'から', 'from/because', '九時から働きます。(I work starting from nine o\'clock.)'),
-  vocab('まで', 'まで', 'until/as far as', '五時まで会社にいます。(I\'ll be at the company until five o\'clock.)'),
+  vocab('に', 'に', 'to/at/for', "七時に起きます。(I wake up at seven o'clock.)"),
+  vocab(
+    'で',
+    'で',
+    'at, location of action / by means of',
+    '駅で待ちます。(I will wait at the station.)'
+  ),
+  vocab('から', 'から', 'from/because', "九時から働きます。(I work starting from nine o'clock.)"),
+  vocab(
+    'まで',
+    'まで',
+    'until/as far as',
+    "五時まで会社にいます。(I'll be at the company until five o'clock.)"
+  ),
   vocab('より', 'より', 'than', '今日は昨日より寒いです。(Today is colder than yesterday.)'),
-  vocab('ほど', 'ほど', 'to the extent of', 'これはあれほど高くないです。(This is not as expensive as that.)'),
+  vocab(
+    'ほど',
+    'ほど',
+    'to the extent of',
+    'これはあれほど高くないです。(This is not as expensive as that.)'
+  ),
   vocab('だけ', 'だけ', 'only', '水だけ飲みます。(I only drink water.)'),
-  vocab('しか〜ない', 'しか〜ない', 'only, with negative', '水しか飲みません。(I only drink water — nothing else.)'),
+  vocab(
+    'しか〜ない',
+    'しか〜ない',
+    'only, with negative',
+    '水しか飲みません。(I only drink water — nothing else.)'
+  ),
   vocab('も', 'も', 'also/even', '私も学生です。(I am also a student.)'),
-  vocab('の', 'の', 'nominaliser', '私の本です。(It\'s my book.)'),
+  vocab('の', 'の', 'nominaliser', "私の本です。(It's my book.)"),
   vocab('と', 'と', 'and/with/quotation', '友達と話します。(I talk with my friend.)'),
-  vocab('や', 'や', 'and, non-exhaustive list', '肉や魚を食べます。(I eat things like meat and fish, among others.)'),
-  vocab('ね', 'ね', 'right?/seeking agreement', '今日は寒いですね。(It\'s cold today, isn\'t it?)'),
+  vocab(
+    'や',
+    'や',
+    'and, non-exhaustive list',
+    '肉や魚を食べます。(I eat things like meat and fish, among others.)'
+  ),
+  vocab('ね', 'ね', 'right?/seeking agreement', "今日は寒いですね。(It's cold today, isn't it?)"),
   vocab('よ', 'よ', 'assertion', '明日は休みですよ。(Tomorrow is a day off, you know.)'),
   vocab('か', 'か', 'or/question marker', 'これは何ですか。(What is this?)'),
-  vocab('って', 'って', 'casual quotation/topic marker', '友達が来るって言っていました。(I heard my friend say they\'re coming.)')
+  vocab(
+    'って',
+    'って',
+    'casual quotation/topic marker',
+    "友達が来るって言っていました。(I heard my friend say they're coming.)"
+  )
 ];
 
 const week31: SeedCard[] = [
   vocab('見出し', 'みだし', 'headline', 'ニュースの見出しを読みます。(I read the news headline.)'),
-  vocab('〜によると', '〜によると', 'according to', 'ニュースによると明日は雨です。(According to the news, it will rain tomorrow.)'),
-  vocab('〜という', '〜という', 'called/which says', '「こんにちは」という言葉を知っています。(I know the word called "hello".)'),
-  vocab('〜について', '〜について', 'about/regarding', '日本について勉強します。(I study about Japan.)'),
-  vocab('〜として', '〜として', 'as, in the role of', '先生として働いています。(I work as a teacher.)'),
-  vocab('〜ため', '〜ため', 'because of/in order to', '家族のために働きます。(I work for the sake of my family.)'),
-  vocab('〜場合', 'ばあい', 'in the case of', '雨の場合、コンサートは中止です。(In the case of rain, the concert is cancelled.)'),
+  vocab(
+    '〜によると',
+    '〜によると',
+    'according to',
+    'ニュースによると明日は雨です。(According to the news, it will rain tomorrow.)'
+  ),
+  vocab(
+    '〜という',
+    '〜という',
+    'called/which says',
+    '「こんにちは」という言葉を知っています。(I know the word called "hello".)'
+  ),
+  vocab(
+    '〜について',
+    '〜について',
+    'about/regarding',
+    '日本について勉強します。(I study about Japan.)'
+  ),
+  vocab(
+    '〜として',
+    '〜として',
+    'as, in the role of',
+    '先生として働いています。(I work as a teacher.)'
+  ),
+  vocab(
+    '〜ため',
+    '〜ため',
+    'because of/in order to',
+    '家族のために働きます。(I work for the sake of my family.)'
+  ),
+  vocab(
+    '〜場合',
+    'ばあい',
+    'in the case of',
+    '雨の場合、コンサートは中止です。(In the case of rain, the concert is cancelled.)'
+  ),
   vocab('〜以上', 'いじょう', 'more than/at least', '二十歳以上です。(Age twenty or above.)'),
-  vocab('〜以下', 'いか', 'less than/at most', '千円以下です。(It\'s 1,000 yen or less.)'),
-  vocab('〜中', 'じゅう', 'throughout/in the middle of', '一日中勉強しました。(I studied all day long.)')
+  vocab('〜以下', 'いか', 'less than/at most', "千円以下です。(It's 1,000 yen or less.)"),
+  vocab(
+    '〜中',
+    'じゅう',
+    'throughout/in the middle of',
+    '一日中勉強しました。(I studied all day long.)'
+  )
 ];
 
 export const vocabUnits: SeedUnit[] = [

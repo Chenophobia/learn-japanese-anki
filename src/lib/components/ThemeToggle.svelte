@@ -11,6 +11,7 @@
   const current = $derived(override ?? theme);
 
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- bare read registers `theme` as this effect's dependency
     theme;
     override = null;
   });
@@ -32,7 +33,7 @@
   onclick={toggle}
   aria-label={current === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
   title={current === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-  class="relative grid h-9 w-9 shrink-0 place-items-center rounded-md text-ink-muted transition-colors hover:bg-black/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent dark:hover:bg-white/10"
+  class="text-ink-muted hover:text-ink focus-visible:ring-accent relative grid h-9 w-9 shrink-0 place-items-center rounded-md transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:outline-none dark:hover:bg-white/10"
 >
   <svg
     viewBox="0 0 24 24"

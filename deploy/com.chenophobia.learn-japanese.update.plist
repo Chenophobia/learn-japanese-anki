@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd agent that runs deploy/update.sh every 5 minutes.
+
+  Install (one time, as the logged-in user):
+    cp deploy/com.chenophobia.learn-japanese.update.plist ~/Library/LaunchAgents/
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.chenophobia.learn-japanese.update.plist
+
+  Uninstall:
+    launchctl bootout gui/$(id -u)/com.chenophobia.learn-japanese.update
+
+  Logs land in deploy/update.log (quiet unless a deploy actually happened
+  or something failed).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.chenophobia.learn-japanese.update</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/chenanigans/Hosted/learn-japanese/deploy/update.sh</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <!-- launchd jobs get a minimal PATH; docker lives in one of these. -->
+    <key>PATH</key>
+    <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/Users/chenanigans/Hosted/learn-japanese/deploy/update.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/chenanigans/Hosted/learn-japanese/deploy/update.log</string>
+</dict>
+</plist>
