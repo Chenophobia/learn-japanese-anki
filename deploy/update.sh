@@ -9,9 +9,23 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Compose narrates "Pulling / Pulled / Running" on stderr even with
+# --quiet-pull. At one run every 5 minutes that noise would be the only
+# thing this log ever accumulated, so each step's output is captured and
+# replayed only if it fails: a healthy poll writes nothing, and the log
+# stays a record of deploys and breakage rather than a treadmill.
+run() {
+  local out
+  if ! out=$("$@" 2>&1); then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') FAILED: $*"
+    echo "$out"
+    return 1
+  fi
+}
+
 running=$(docker inspect --format '{{.Image}}' learn-japanese 2>/dev/null || echo 'none')
-docker compose -f compose.yml pull --quiet
-docker compose -f compose.yml up -d --quiet-pull
+run docker compose -f compose.yml pull --quiet
+run docker compose -f compose.yml up -d --quiet-pull
 now=$(docker inspect --format '{{.Image}}' learn-japanese 2>/dev/null || echo 'none')
 
 if [ "$running" != "$now" ]; then
