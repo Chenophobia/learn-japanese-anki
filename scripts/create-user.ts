@@ -11,10 +11,19 @@
  *   CREATE_USER_USERNAME=someone CREATE_USER_PASSWORD='a-strong-password' \
  *     npm run create-user
  *
- * Inside the deployed container (see README.md "Creating users"):
+ * Against the deployed container (see README.md "Creating users"), stop the
+ * app first so exactly one process ever touches app.db:
  *
- *   docker exec -e CREATE_USER_USERNAME=someone -e CREATE_USER_PASSWORD='a-strong-password' \
- *     learn-japanese npm run create-user
+ *   docker compose stop
+ *   docker compose run --rm \
+ *     -e CREATE_USER_USERNAME=someone -e CREATE_USER_PASSWORD='a-strong-password' \
+ *     app npm run create-user
+ *   docker compose start
+ *
+ * (`docker exec ... learn-japanese npm run create-user` against the live
+ * container also works, but briefly puts a second connection on app.db while
+ * it's running — restart the container afterward if you use that form. See
+ * README.md's WAL/virtiofs warning under "Backups".)
  *
  * Username/password are validated with the exact same rules the old signup
  * form enforced (`validateCredentials`), so accounts created here can't bypass

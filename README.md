@@ -90,23 +90,42 @@ There is no signup page — it was removed after launch because the app is
 reachable on a public domain and open registration invited bot accounts (see
 `docs/superpowers/specs/2026-07-31-flashcard-app-design.md` for the
 superseded design). The **only** way to add an account now is for the
-operator to run the `create-user` script against the same database the
-running container uses, with the container up:
+operator to run the `create-user` script, with the main app stopped first so
+exactly one process ever touches `app.db`:
 
 ```bash
-docker exec -e CREATE_USER_USERNAME=someone -e CREATE_USER_PASSWORD='a-strong-password' \
-  learn-japanese npm run create-user
+docker compose stop
+docker compose run --rm \
+  -e CREATE_USER_USERNAME=someone \
+  -e CREATE_USER_PASSWORD='a-strong-password' \
+  app npm run create-user
+docker compose start
 ```
 
-The container must already be running (`docker compose up -d`) — this runs
-`scripts/create-user.ts` inside it via `tsx`, straight off the TypeScript
-source with no separate build step, reusing the app's own validation,
-password hashing, and duplicate-username checks so a manually created account
-can't bypass any constraint the login flow assumes. Username/password are
-read from environment variables rather than argv specifically so the
-password doesn't land in shell history the way an argv-based invocation
-would. A duplicate username is refused with a non-zero exit code and a clear
-message; success prints `Created user "<username>" (id <id>).`.
+`docker compose run --rm` starts a throwaway container sharing the same
+`./data` bind mount, runs `scripts/create-user.ts` in it via `tsx` — straight
+off the TypeScript source, no separate build step — and exits; the main app
+isn't running at that point, so there is never a second live connection to
+the database (see the WAL/virtiofs warning under "Backups" below for why
+that matters on this host). **The app is unreachable for the few seconds
+between `stop` and `start`** — this is a single-container deployment, so
+creating a user briefly takes the site down; that's expected, not a fault.
+
+The script reuses the app's own validation, password hashing, and
+duplicate-username checks, so a manually created account can't bypass any
+constraint the login flow assumes. Username/password are read from
+environment variables rather than argv specifically so the password doesn't
+land in shell history the way an argv-based invocation would. A duplicate
+username is refused with a non-zero exit code and a clear message; success
+prints `Created user "<username>" (id <id>).`.
+
+If the app must stay up (e.g. mid-incident), `docker exec -e
+CREATE_USER_USERNAME=someone -e CREATE_USER_PASSWORD='a-strong-password'
+learn-japanese npm run create-user` also works — but it briefly puts a
+second connection on `app.db` while the container is running, so restart the
+container afterward (`docker compose restart app`) as a precaution. Prefer
+the `stop` / `run --rm` / `start` sequence above whenever you can afford the
+few seconds of downtime.
 
 ### Backups
 
@@ -138,12 +157,10 @@ boundary. A second process opening the database was observed, on this live
 deployment, to checkpoint and unlink the WAL out from under the running app,
 corrupting its view of the database. This is not a theoretical risk — it
 happened. Stop the container (`docker compose stop app`) before poking at
-`app.db` directly, and start it again afterward. `create-user` (above) is
-exempt from this warning only in the sense that it's the one sanctioned,
-narrowly-scoped exception — it opens, performs one write, and exits
-immediately — but it is still a second process touching the same file, so
-prefer running it when the app is otherwise idle, and treat any database
-oddity right after using it as a reason to check this note first.
+`app.db` directly, and start it again afterward. This is exactly why
+`create-user` (above) is normally run with the app stopped
+(`docker compose stop` / `run --rm` / `start`) rather than against the live
+container.
 
 ### Reverse proxy and TLS
 
