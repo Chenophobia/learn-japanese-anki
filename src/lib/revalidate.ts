@@ -5,6 +5,8 @@ export type RevalidateInput = {
   wasHidden: boolean;
   /** A rating POST is currently awaiting its response. */
   ratingInFlight: boolean;
+  /** The study page's current card has its answer showing, unrated. */
+  answerRevealed: boolean;
 };
 
 /**
@@ -18,8 +20,16 @@ export type RevalidateInput = {
 export function shouldRevalidate({
   restoredFromBfcache,
   wasHidden,
-  ratingInFlight
+  ratingInFlight,
+  answerRevealed
 }: RevalidateInput): boolean {
   if (ratingInFlight) return false;
+  // If the answer is revealed but unrated, the server would serve back the
+  // very same card — revalidating here only destroys the user's reading
+  // position and gains nothing. The one thing it costs is revealing here
+  // *and* rating that same card on another device before returning to this
+  // one; that's rare, and self-corrects on this tab's next rating (which
+  // does its own invalidateAll).
+  if (answerRevealed) return false;
   return restoredFromBfcache || wasHidden;
 }

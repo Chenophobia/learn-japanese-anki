@@ -5,6 +5,7 @@ const input = (over: Partial<Parameters<typeof shouldRevalidate>[0]> = {}) => ({
   restoredFromBfcache: false,
   wasHidden: false,
   ratingInFlight: false,
+  answerRevealed: false,
   ...over
 });
 
@@ -31,5 +32,18 @@ describe('shouldRevalidate', () => {
     // result decides which card is displayed.
     expect(shouldRevalidate(input({ restoredFromBfcache: true, ratingInFlight: true }))).toBe(false);
     expect(shouldRevalidate(input({ wasHidden: true, ratingInFlight: true }))).toBe(false);
+  });
+
+  it('never revalidates a bfcache restore while the answer is revealed but unrated', () => {
+    // The server would serve back the exact same card, so refetching here
+    // only costs the user their reveal for no gain.
+    expect(shouldRevalidate(input({ restoredFromBfcache: true, answerRevealed: true }))).toBe(false);
+  });
+
+  it('never revalidates a visibility restore while the answer is revealed but unrated', () => {
+    // This is the common case in practice: an iPad's app switcher or
+    // notification pull-down fires visibilitychange constantly, and must not
+    // flip a revealed card back to the question.
+    expect(shouldRevalidate(input({ wasHidden: true, answerRevealed: true }))).toBe(false);
   });
 });

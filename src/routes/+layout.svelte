@@ -21,7 +21,14 @@
 
   $effect(() => {
     function revalidate(restoredFromBfcache: boolean) {
-      if (!shouldRevalidate({ restoredFromBfcache, wasHidden, ratingInFlight: rating.inFlight })) {
+      if (
+        !shouldRevalidate({
+          restoredFromBfcache,
+          wasHidden,
+          ratingInFlight: rating.inFlight,
+          answerRevealed: rating.answerRevealed
+        })
+      ) {
         return;
       }
       wasHidden = false;
