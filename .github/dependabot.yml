@@ -1,4 +1,9 @@
 version: 2
+# Everything runs Monday 06:00 so a week's updates arrive together rather
+# than trickling in. Each ecosystem can still only open its own PRs —
+# Dependabot cannot group across ecosystems, and it cannot stack PRs (every
+# branch is cut from, and targeted at, the default branch) — so the floor is
+# one PR per ecosystem that has updates, and grouping is what keeps it there.
 updates:
   - package-ecosystem: npm
     directory: '/'
@@ -7,21 +12,36 @@ updates:
       day: monday
       time: '06:00'
     open-pull-requests-limit: 5
-    # One combined PR for routine minor/patch bumps keeps the Actions-minutes
-    # cost of a weekly update cycle to a single CI run. Majors arrive as
-    # individual PRs and are excluded from auto-merge.
     groups:
+      # Routine bumps: one PR, auto-merged once CI passes.
       minor-and-patch:
         applies-to: version-updates
         update-types:
           - minor
           - patch
+      # Majors still need a human, but as a single PR instead of one per
+      # package. fetch-metadata reports a group's highest semver change, so
+      # this PR is never auto-merged.
+      major:
+        applies-to: version-updates
+        update-types:
+          - major
+    # Security updates are deliberately left ungrouped: they are rare and
+    # urgent, and one broken fix should not block the others in a shared PR.
+    ignore:
+      # @sveltejs/kit declares `peerOptional typescript "^5.3.3 || ^6.0.0"`,
+      # so TypeScript 7 fails `npm ci` with ERESOLVE before the tests even
+      # run. Drop this entry once Kit's peer range admits 7.
+      - dependency-name: typescript
+        update-types:
+          - 'version-update:semver-major'
 
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
       interval: weekly
       day: monday
+      time: '06:00'
     groups:
       actions:
         patterns:
@@ -33,3 +53,16 @@ updates:
     schedule:
       interval: weekly
       day: monday
+      time: '06:00'
+    groups:
+      docker:
+        patterns:
+          - '*'
+    ignore:
+      # Dependabot offers the newest Node tag regardless of support status —
+      # it proposed node:25, an odd-numbered line that never becomes LTS and
+      # went end-of-life on 2026-03-31. Only even majors are worth taking, so
+      # those jumps are made by hand.
+      - dependency-name: node
+        update-types:
+          - 'version-update:semver-major'
