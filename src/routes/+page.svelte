@@ -129,6 +129,10 @@
               {#if unit.status === 'done'}
                 <span class="relative z-10 h-2.5 w-2.5 rounded-full bg-ink-muted/60"></span>
               {:else if unit.status === 'current'}
+                <!-- The ring is drawn via the 'breathe' animation's box-shadow, not Tailwind classes.
+                     The animation-fill-mode: both declaration preserves the 100% keyframe's 4px ring
+                     even when prefers-reduced-motion: reduce collapses the animation to a single
+                     near-zero-duration iteration. -->
                 <span class="path-dot-current relative z-10 h-3 w-3 rounded-full bg-accent"></span>
               {:else}
                 <span class="relative z-10 h-2 w-2 rounded-full border border-hairline bg-surface"></span>
