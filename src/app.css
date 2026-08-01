@@ -1,0 +1,105 @@
+@import 'tailwindcss';
+
+/* Exclude docs/ (design specs, plans) from Tailwind's automatic content scan —
+   they contain example class strings that aren't used by any component. */
+@source not "../docs";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens. Each is a real value in @theme (the light default) and is
+ * re-pointed in `.dark` — utilities like `bg-paper` or `text-accent` never
+ * need a `dark:` prefix because the underlying CSS variable is what changes.
+ * Palette: "paper" neutrals (a cool off-white, not the cream-and-terracotta
+ * default) with a single indigo accent ("aizome", the Japanese indigo-dye
+ * blue) reserved for the current-page indicator and focus rings.
+ */
+@theme {
+  --color-paper: #f6f7f8;
+  --color-surface: #ffffff;
+  --color-ink: #1b1d21;
+  --color-ink-muted: #61666e;
+  --color-hairline: #e1e4e9;
+  --color-accent: #2c5282;
+
+  /*
+   * Rating-button colors for the study screen. Same construction as
+   * --color-accent above: a deep, saturated tone in light mode (contrast
+   * against near-white button text) and a lighter tint of the same hue in
+   * dark mode (contrast against near-black button text). "Easy" reuses
+   * --color-accent rather than adding a fourth hue — it reads as the calm,
+   * confident end of the same Again→Hard→Good→Easy progression.
+   */
+  --color-again: #8b2b23;
+  --color-hard: #87521d;
+  --color-good: #276847;
+
+  /*
+   * Sequential heat ramp for the stats-page activity heatmap: one hue (the
+   * same accent blue as --color-accent, so the page reads as one system),
+   * four steps of increasing magnitude built in OKLCH and checked with the
+   * dataviz skill's ordinal-ramp validator (monotone lightness, >=0.06
+   * adjacent step, light end clears 2:1 against the surface, single hue) —
+   * see task-13-report.md for the exact command/output. --color-heat-0 is
+   * the zero-review cell, not part of the ramp itself.
+   */
+  --color-heat-0: var(--color-hairline);
+  --color-heat-1: #8ca7ca;
+  --color-heat-2: #5f82b0;
+  --color-heat-3: #365f92;
+  --color-heat-4: #083c75;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic',
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+  --color-paper: #14171c;
+  --color-surface: #1b1f26;
+  --color-ink: #e7e9ec;
+  --color-ink-muted: #9aa1ac;
+  --color-hairline: #2b3038;
+  --color-accent: #7fa8d9;
+
+  --color-again: #de857c;
+  --color-hard: #e0a66c;
+  --color-good: #59c08c;
+
+  /* Sequential ramp re-stepped for the dark surface (anchor flips: the
+     near-surface step is the darkest, brightest = highest magnitude),
+     separately validated — see task-13-report.md. */
+  --color-heat-1: #334f70;
+  --color-heat-2: #5074a0;
+  --color-heat-3: #6995cb;
+  --color-heat-4: #85b8f6;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  /* Generous line-height for legibility — Japanese glyphs are visually
+     denser than Latin text at the same font size, and card faces in later
+     tasks inherit this base. */
+  body {
+    line-height: 1.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

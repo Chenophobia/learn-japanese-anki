@@ -2,6 +2,13 @@
 
 Status: approved (brainstorming session, 2026-07-31)
 
+> **Superseded (2026-08-01):** the open self-signup described below was
+> removed after launch. The app went live on a public domain
+> (`learn.chenaners.com`) and open registration invited bot accounts; the
+> operator now creates accounts directly (see README.md's "Creating users").
+> The rest of this document is left as-is as a historical record of the
+> original design.
+
 ## Goal
 
 A self-hosted, Docker-deployable spaced-repetition flashcard app for the N4 curriculum documented in `docs/curriculum-plan.md`, using the FSRS-6 scheduling algorithm documented in `docs/fsrs-algorithm.md`. Multiple independent users can log in, each tracking their own progress through the same shared course content. Deployed at `learn.chenaners.com` behind the user's existing host nginx, following the same conventions as the sibling project `chenaners-creative` (single Docker container, bind-mounted SQLite, host nginx terminates TLS).
@@ -138,7 +145,7 @@ This is what ties the sequential curriculum to FSRS:
 ## Pages
 
 - **`/login`** — username + password + "remember me on this device" checkbox.
-- **`/signup`** — username + password, open self-signup (no invite/approval step), logs the new user in immediately.
+- **`/signup`** — username + password, open self-signup (no invite/approval step), logs the new user in immediately. **Superseded:** removed post-launch; see the note at the top of this document.
 - **`/` (chapter map, default landing page after login)** — lists the 4 chapters, each expandable to its units. Each unit shows `introduced / total` card count and a lighter sub-count of cards that have reached Review state (matured). Current unit is visually highlighted; locked units are dimmed and not clickable through to card content.
 - **`/study`** — the flashcard screen: show front → reveal → four rating buttons with previewed resulting interval on each (from `scheduler.repeat()`'s four outcomes) → next card. Pulls from the daily queue (§ above). Ends in a "done for now" state when the queue empties.
 - **`/stats`** — KPI/metrics page, computed from `review_logs` + `user_cards`:
