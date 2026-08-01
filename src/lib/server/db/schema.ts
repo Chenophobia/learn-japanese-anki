@@ -4,7 +4,7 @@ export const chapters = sqliteTable('chapters', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   order: integer('order').notNull(),
   title: text('title').notNull(),
-  kind: text('kind').notNull() // 'kana' | 'kanji_vocab' | 'grammar'
+  kind: text('kind').notNull() // 'kana' | 'kanji' | 'vocab' | 'grammar' — the track heading on the course map
 });
 
 export const units = sqliteTable('units', {
