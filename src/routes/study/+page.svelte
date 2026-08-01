@@ -41,6 +41,17 @@
     revealed = false;
   });
 
+  // The layout's revalidation listeners live outside this page, so the
+  // shared flag is how they learn the user is mid-card. Cleared on
+  // teardown: a stale `true` left behind on navigation would disable
+  // revalidation everywhere else.
+  $effect(() => {
+    rating.answerRevealed = revealed;
+    return () => {
+      rating.answerRevealed = false;
+    };
+  });
+
   const RATING_BG: Record<number, string> = {
     1: 'bg-again',
     2: 'bg-hard',
