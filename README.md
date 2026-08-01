@@ -35,7 +35,7 @@ Set these in a `.env` file (copy `.env.example` to start):
 
 | Variable         | Purpose                                                                                                                                 |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATA_DIR`       | Directory holding `app.db` (and its `-wal`/`-shm` sidecars). In Docker this is `/app/data`, bind-mounted from `./data` on the host.        |
+| `DATA_DIR`       | Directory holding `app.db`. In Docker this is `/app/data`, bind-mounted from `./data` on the host.                                         |
 | `SESSION_SECRET` | Reserved, **not currently read** by the app. Session ids are 32-byte CSPRNG tokens looked up server-side and are not HMAC-signed, so there is nothing to sign with a secret. Left in `.env.example` as a placeholder in case a future change needs it; safe to leave as-is or delete. |
 
 ## Deployment
@@ -119,22 +119,49 @@ land in shell history the way an argv-based invocation would. A duplicate
 username is refused with a non-zero exit code and a clear message; success
 prints `Created user "<username>" (id <id>).`.
 
-If the app must stay up (e.g. mid-incident), `docker exec -e
-CREATE_USER_USERNAME=someone -e CREATE_USER_PASSWORD='a-strong-password'
-learn-japanese npm run create-user` also works — but it briefly puts a
-second connection on `app.db` while the container is running, so restart the
-container afterward (`docker compose restart app`) as a precaution. Prefer
-the `stop` / `run --rm` / `start` sequence above whenever you can afford the
-few seconds of downtime.
+**Check for that success line, not just the exit code.** Piping the script
+through `tail` makes `$?` report the exit status of `tail`, not of the
+script — a failed creation then looks like a success. This bit the initial
+deployment: an account was created with a throwaway password from a
+duplicate-username test, and the "already taken" refusal that followed was
+read as proof the guard worked rather than as evidence the real account had
+never been created.
+
+### Resetting a password
+
+There is no self-service password reset. Use the `set-password` script,
+which changes the hash in place and so keeps the account's review history
+(deleting and recreating the user would cascade it away):
+
+```bash
+docker compose stop
+docker compose run --rm \
+  -e SET_PASSWORD_USERNAME=someone \
+  -e SET_PASSWORD_PASSWORD='a-strong-password' \
+  app npm run set-password
+docker compose start
+```
+
+An unknown username is refused with a non-zero exit code rather than
+silently changing nothing; success prints `Password updated for "<username>".`
+
+If the app must stay up (e.g. mid-incident), either script can be run with
+`docker exec -e ... learn-japanese npm run create-user` (or `set-password`)
+against the live container. That briefly puts a second connection on
+`app.db`; since the switch to rollback-journal mode this no longer risks the
+unlinked-WAL corruption described under "Backups", but the two connections
+can still contend for the write lock. Prefer the `stop` / `run --rm` /
+`start` sequence above whenever you can afford the few seconds of downtime.
 
 ### Backups
 
-Stop the container, then copy the database file and its WAL sidecar (SQLite
-keeps uncommitted data in `-wal` until it's checkpointed into the main file):
+Stop the container, then copy the database file. The app runs SQLite in
+rollback-journal (`DELETE`) mode, so a committed write is always in `app.db`
+itself and there are no `-wal`/`-shm` sidecars to copy alongside it:
 
 ```bash
 docker compose stop app
-cp data/app.db data/app.db-wal /path/to/backup/   # -wal may not exist; that's fine
+cp data/app.db /path/to/backup/
 docker compose start app
 ```
 
@@ -150,17 +177,37 @@ files as a non-root operator.
 
 **Stop the container before any ad hoc direct inspection of `app.db`** — e.g.
 opening a `sqlite3` shell or a scratch `docker exec ... node` script against
-it — while the app is also running. On this deployment's macOS host, `./data`
-is a bind mount served over virtiofs into the Linux container, and WAL
-mode's shared-memory locking (the `-shm` file) does not work across that
-boundary. A second process opening the database was observed, on this live
-deployment, to checkpoint and unlink the WAL out from under the running app,
-corrupting its view of the database. This is not a theoretical risk — it
-happened. Stop the container (`docker compose stop app`) before poking at
-`app.db` directly, and start it again afterward. This is exactly why
-`create-user` (above) is normally run with the app stopped
-(`docker compose stop` / `run --rm` / `start`) rather than against the live
-container.
+it — while the app is also running.
+
+The reason is specific to this host. `./data` is a bind mount served over
+virtiofs into the Linux container. The app originally ran SQLite in WAL
+mode, and WAL's shared-memory index (the `-shm` file) does not work across
+that boundary: two connections each believe they are the only one. A second
+process opening the database was observed, on this live deployment, to
+checkpoint and unlink `app.db-wal` out from under the running app, which
+then kept writing into an unlinked file — visible as
+`app.db-wal (deleted)` in `/proc/1/fd`. Anything it wrote would have
+vanished on the next restart.
+
+`connect.ts` therefore uses rollback-journal (`DELETE`) mode, which needs no
+shared memory and relies only on POSIX `fcntl` locks that virtiofs does
+implement. Contention now surfaces as a `SQLITE_BUSY` error instead of
+silent divergence, and `src/lib/server/db/connect.test.ts` fails if anything
+switches the journal mode back. The app is a single synchronous
+`better-sqlite3` process, so WAL's concurrent-reader benefit bought nothing
+here anyway.
+
+That makes a stray second connection far less dangerous than it was, but
+still not something to do casually — one process at a time remains the rule.
+If you must read the database while the app is up, open it read-only and
+immutable, which takes no locks at all:
+
+```bash
+sqlite3 'file:data/app.db?immutable=1' 'select count(*) from users;'
+```
+
+This is also why `create-user` and `set-password` (above) are run with the
+app stopped rather than against the live container.
 
 ### Reverse proxy and TLS
 

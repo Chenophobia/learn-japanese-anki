@@ -22,6 +22,23 @@ export function usernameTaken(db: Db, username: string): boolean {
  * throwing a raw SQLite UNIQUE constraint error — callers detect the race by
  * checking for a `null` return rather than catching an exception.
  */
+/**
+ * Replaces an existing user's password hash. Returns false if no such user.
+ *
+ * There is no self-service password reset — this is the operator's only way to
+ * change a password, and the only alternative to deleting the account (which
+ * would take the user's review history with it).
+ */
+export function setPasswordHash(db: Db, username: string, passwordHash: string): boolean {
+  const updated = db
+    .update(users)
+    .set({ passwordHash })
+    .where(eq(users.username, username))
+    .returning({ id: users.id })
+    .all();
+  return updated.length > 0;
+}
+
 export function insertUser(
   db: Db,
   username: string,
