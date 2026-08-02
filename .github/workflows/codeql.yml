@@ -3,10 +3,44 @@ name: CodeQL
 on:
   push:
     branches: [main]
+    # CodeQL only analyses first-party JS/TS (node_modules is excluded by
+    # default), so a change confined to these paths has nothing new to scan.
+    # This is also what keeps Dependabot off CodeQL: each of the three
+    # ecosystems touches exactly one of them — npm the lockfile,
+    # github-actions the workflows, docker the Dockerfile.
+    #
+    # Duplicated below rather than shared via a YAML anchor: Actions does not
+    # support anchors/aliases. Keep the two lists in sync.
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'LICENSE'
+      - 'static/**'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'LICENSE'
+      - 'static/**'
   schedule:
     - cron: '43 6 * * 1'
+
+# Superseded analyses of the same PR are wasted work; main is never cancelled
+# because its result is the default-branch alert baseline.
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

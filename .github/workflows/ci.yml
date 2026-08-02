@@ -5,13 +5,17 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Nightly rebuild of main. Safety net for a GitHub Actions quirk: a PR
+  # Weekly rebuild of main. Safety net for a GitHub Actions quirk: a PR
   # auto-merged by the GITHUB_TOKEN (see dependabot-auto-merge.yml) does not
   # fire this workflow's push trigger, so without this the deployed image
-  # could silently stop tracking main. Worst case, an auto-merged dependency
-  # update reaches the image a day late.
+  # could silently stop tracking main.
+  #
+  # Tuesday, because the only merges that can go unnoticed are Dependabot's
+  # and those all land Monday 06:00 UTC (see dependabot.yml) — a nightly run
+  # would rebuild an unchanged main six times a week to cover a weekly event.
+  # Worst case, an auto-merged dependency update reaches the image a day late.
   schedule:
-    - cron: '17 5 * * *'
+    - cron: '17 5 * * 2'
   workflow_dispatch:
 
 concurrency:

@@ -35,6 +35,21 @@ updates:
       - dependency-name: typescript
         update-types:
           - 'version-update:semver-major'
+      # The next two are transitive-only, and no direct bump reaches them —
+      # Dependabot re-attempts the security update on every run and fails,
+      # which is where the recurring red "Dependabot Updates" runs came from.
+      # Ignoring stops the retry; the alerts stay visible in the Security tab,
+      # so this hides no risk. Revisit when the parent packages move.
+      #
+      # cookie@0.6.0 is pinned by @sveltejs/kit and does reach the built
+      # server. The advisory needs untrusted input used as a cookie *name* or
+      # attribute; Kit only ever passes literals there.
+      - dependency-name: cookie
+      # esbuild@0.18.20 comes via the abandoned @esbuild-kit/* packages under
+      # drizzle-kit (a devDependency), so it never ships in the image — and
+      # the advisory only concerns the dev server. drizzle-kit 0.31.10 is
+      # already current; the fix has to come from upstream.
+      - dependency-name: esbuild
 
   - package-ecosystem: github-actions
     directory: '/'
