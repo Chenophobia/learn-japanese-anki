@@ -1,6 +1,12 @@
 name: Dependabot auto-merge
 
-on: pull_request
+# Enabling auto-merge is a one-shot action that sticks for the life of the
+# PR, so there is nothing to redo when Dependabot force-pushes a rebase —
+# without the type filter this re-ran on every `synchronize`.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened]
 
 permissions:
   contents: write
