@@ -98,8 +98,8 @@ const set4: SeedCard[] = [
 ];
 
 export const kanjiUnits: SeedUnit[] = [
-  { title: 'Kanji Set 1 — Core & most useful', kind: 'kanji', dailyCap: 3, cards: set1 },
-  { title: 'Kanji Set 2 — Numbers, time & money', kind: 'kanji', dailyCap: 3, cards: set2 },
-  { title: 'Kanji Set 3 — Daily-life verbs & adjectives', kind: 'kanji', dailyCap: 3, cards: set3 },
-  { title: 'Kanji Set 4 — Places, directions & nature', kind: 'kanji', dailyCap: 3, cards: set4 }
+  { title: 'Core & most useful', kind: 'kanji', dailyCap: 3, cards: set1 },
+  { title: 'Numbers, time & money', kind: 'kanji', dailyCap: 3, cards: set2 },
+  { title: 'Daily-life verbs & adjectives', kind: 'kanji', dailyCap: 3, cards: set3 },
+  { title: 'Places, directions & nature', kind: 'kanji', dailyCap: 3, cards: set4 }
 ];

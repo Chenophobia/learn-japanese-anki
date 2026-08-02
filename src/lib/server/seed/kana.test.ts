@@ -10,11 +10,11 @@ function allCards(chapter: SeedChapter) {
 describe('kana chapters', () => {
   it('hiragana has the five expected units', () => {
     expect(hiraganaChapter.units.map((u) => u.title)).toEqual([
-      'Base gojuon',
+      'Base 46',
       'Dakuten & handakuten',
-      'Combination kana (youon)',
-      'Special characters',
-      'Anchor verbs'
+      'Combination kana',
+      'Special marks',
+      'First verbs'
     ]);
   });
 

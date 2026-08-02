@@ -15,7 +15,7 @@ describe('createTestDb', () => {
       .values({
         chapterId: chapter.id,
         order: 1,
-        title: 'Base gojuon',
+        title: 'Base 46',
         kind: 'kana',
         dailyCap: 15
       })

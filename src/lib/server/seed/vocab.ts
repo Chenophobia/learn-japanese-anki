@@ -680,9 +680,9 @@ export const vocabUnits: SeedUnit[] = [
   { title: 'City life & entertainment', kind: 'vocab', dailyCap: 8, cards: week24 },
   { title: 'Feelings & emotions', kind: 'vocab', dailyCap: 8, cards: week25 },
   { title: 'Frequency & quantity adverbs', kind: 'vocab', dailyCap: 8, cards: week26 },
-  { title: 'N4 verbs: motion, change & giving', kind: 'vocab', dailyCap: 8, cards: week27 },
-  { title: 'N4 verbs: communication & thought', kind: 'vocab', dailyCap: 8, cards: week28 },
-  { title: 'N4 nouns: abstract & everyday concepts', kind: 'vocab', dailyCap: 8, cards: week29 },
-  { title: 'Particles deep dive', kind: 'vocab', dailyCap: 8, cards: week30 },
+  { title: 'Verbs — motion, change & giving', kind: 'vocab', dailyCap: 8, cards: week27 },
+  { title: 'Verbs — communication & thought', kind: 'vocab', dailyCap: 8, cards: week28 },
+  { title: 'Nouns — abstract & everyday', kind: 'vocab', dailyCap: 8, cards: week29 },
+  { title: 'Particles', kind: 'vocab', dailyCap: 8, cards: week30 },
   { title: 'Reading vocabulary', kind: 'vocab', dailyCap: 8, cards: week31 }
 ];

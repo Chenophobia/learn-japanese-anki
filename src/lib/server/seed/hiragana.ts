@@ -153,10 +153,10 @@ export const hiraganaChapter: SeedChapter = {
   title: 'Hiragana',
   kind: 'kana',
   units: [
-    { title: 'Base gojuon', kind: 'kana', dailyCap: 15, cards: base },
+    { title: 'Base 46', kind: 'kana', dailyCap: 15, cards: base },
     { title: 'Dakuten & handakuten', kind: 'kana', dailyCap: 15, cards: dakuten },
-    { title: 'Combination kana (youon)', kind: 'kana', dailyCap: 15, cards: youon },
-    { title: 'Special characters', kind: 'kana', dailyCap: 15, cards: special },
-    { title: 'Anchor verbs', kind: 'vocab', dailyCap: 8, cards: anchorVerbs }
+    { title: 'Combination kana', kind: 'kana', dailyCap: 15, cards: youon },
+    { title: 'Special marks', kind: 'kana', dailyCap: 15, cards: special },
+    { title: 'First verbs', kind: 'vocab', dailyCap: 8, cards: anchorVerbs }
   ]
 };

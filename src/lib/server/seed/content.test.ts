@@ -51,9 +51,10 @@ describe('curriculum', () => {
 
     // Uniqueness is asserted only over the regrouped units. Unit titles are
     // NOT unique across the whole curriculum — the Hiragana and Katakana
-    // chapters each contain a "Dakuten & handakuten" and a "Combination kana
-    // (youon)" — but they are unique within the pool groupIntoChapters keys
-    // by, which is the property that matters.
+    // chapters deliberately share "Base 46", "Dakuten & handakuten" and
+    // "Combination kana", since they teach the same structure in two scripts
+    // — but they are unique within the pool groupIntoChapters keys by, which
+    // is the property that matters.
     const regrouped = curriculum
       .filter((c) => c.kind !== 'kana')
       .flatMap((c) => c.units.map((u) => u.title));
@@ -96,18 +97,18 @@ describe('curriculum', () => {
   it('leaves the two kana chapters untouched, vocab unit and all', () => {
     const [hiragana, katakana] = curriculum;
     expect(hiragana.units.map((u) => u.title)).toEqual([
-      'Base gojuon',
+      'Base 46',
       'Dakuten & handakuten',
-      'Combination kana (youon)',
-      'Special characters',
-      'Anchor verbs'
+      'Combination kana',
+      'Special marks',
+      'First verbs'
     ]);
     expect(katakana.units.map((u) => u.title)).toEqual([
       'Base 46',
       'Dakuten & handakuten',
-      'Combination kana (youon)',
-      'Extended katakana',
-      'Loanwords'
+      'Combination kana',
+      'Extended sounds',
+      'First loanwords'
     ]);
     // A chapter's kind is a track label, not a claim about its units.
     expect(hiragana.units.at(-1)!.kind).toBe('vocab');

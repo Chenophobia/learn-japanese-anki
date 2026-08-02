@@ -38,7 +38,7 @@ the whole set self-consistent rather than fixing one symptom.
 
 ## Renames
 
-22 of 50 units change. No chapter titles change — all eleven already satisfy
+23 of 50 units change. No chapter titles change — all eleven already satisfy
 rule 1.
 
 ### Hiragana / Katakana
@@ -89,7 +89,7 @@ Every grammar unit becomes `Topic — gloss`.
 | Before                                                  | After                                            |
 | ------------------------------------------------------- | ------------------------------------------------ |
 | `Listing actions — 〜たり〜たりする`                     | **Listing actions — doing this & that**          |
-| `Trying and wanting to try`                             | **Attempt — try doing**                          |
+| `Trying and wanting to try`                             | **Trying — try doing & want to try**             |
 | `Completion and regret — end up doing`                  | **Completion — end up doing**                    |
 | `Reporting thoughts and hearsay — I think / was saying` | **Reported thoughts — I think / they said**      |
 | `Hearsay and appearance — apparently, looks like`       | **Hearsay & appearance — apparently, looks like** |
@@ -102,7 +102,7 @@ first teaches 〜と思う / 〜と言っていた (your own thoughts, quoting s
 the second 〜らしい / 〜そうだ (secondhand information, and how things look).
 The old names both said "hearsay" and blurred that line.
 
-The remaining 28 units already conform and are untouched.
+The remaining 27 units already conform and are untouched.
 
 ## Applying the rename without destroying progress
 
@@ -137,14 +137,32 @@ A white あ centred on a rounded square in the app's existing indigo accent
 (`#2c5282`, "aizome"). It reads as *Japanese* at a glance and stays legible
 at 16px, which the denser 学 and a card-stack outline do not.
 
-Shipped as:
+Shipped as PNG only, no SVG favicon. The mark is a real Hiragino glyph
+rendered at build time rather than hand-drawn bezier curves or an SVG
+`<text>` element: `<text>` would render as tofu on any device without a
+Japanese font, and a raster cannot. Nothing about the font travels into the
+repo beyond the rendered pixels.
 
-- `static/icon.svg` — the source mark, used as the browser favicon.
-- `static/apple-touch-icon.png` — 180×180. Safari does not accept SVG for
-  homescreen shortcuts, and iPad Safari is the target device.
-- `static/site.webmanifest` — name, theme colour, and 192/512 PNG icons, so
+- `static/apple-touch-icon.png` — 180×180, opaque, square-cornered. iOS
+  applies its own superellipse mask and renders any transparency it finds as
+  black, so a pre-rounded icon is double-masked.
+- `static/favicon-32.png`, `-192`, `-512` — rounded corners, genuinely
+  transparent outside the curve.
+- `static/site.webmanifest` — name, theme colour, and the 192/512 icons, so
   an installed shortcut has a proper label.
-- `app.html` gains the corresponding `<link>` tags.
+- `scripts/make-icons.sh` — regenerates all four from one inline SVG, so the
+  mark is reproducible rather than a one-off artifact.
+- `app.html` gains the corresponding `<link>` tags, plus
+  `apple-mobile-web-app-title` and a `theme-color` driven by the existing
+  theme cookie, so a standalone launch's status bar matches the page.
+
+The `<link href>`s are root-absolute rather than `%sveltekit.assets%`. That
+placeholder expands to a relative `.` (`kit.paths.relative` defaults to true),
+so on `/study` it resolved to `/study/apple-touch-icon.png` — a 404. iOS reads
+the touch icon from whichever page is open when you add to the homescreen, so
+the relative form silently degraded the shortcut to a screenshot. The same
+flaw affected the old `favicon.svg`. No `kit.paths.base` is configured, so the
+app is always served from root.
 
 The current `static/favicon.svg` (SvelteKit's Svelte logo) is deleted.
 

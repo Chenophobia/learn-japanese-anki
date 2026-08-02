@@ -198,8 +198,8 @@ export const katakanaChapter: SeedChapter = {
   units: [
     { title: 'Base 46', kind: 'kana', dailyCap: 15, cards: base },
     { title: 'Dakuten & handakuten', kind: 'kana', dailyCap: 15, cards: dakuten },
-    { title: 'Combination kana (youon)', kind: 'kana', dailyCap: 15, cards: youon },
-    { title: 'Extended katakana', kind: 'kana', dailyCap: 15, cards: extended },
-    { title: 'Loanwords', kind: 'vocab', dailyCap: 8, cards: loanwords }
+    { title: 'Combination kana', kind: 'kana', dailyCap: 15, cards: youon },
+    { title: 'Extended sounds', kind: 'kana', dailyCap: 15, cards: extended },
+    { title: 'First loanwords', kind: 'vocab', dailyCap: 8, cards: loanwords }
   ]
 };
