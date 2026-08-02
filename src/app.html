@@ -3,7 +3,35 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/favicon.svg" />
+
+    <!--
+      Root-absolute, not %sveltekit.assets%. That placeholder expands to a
+      *relative* "." (kit.paths.relative defaults to true), so on /study it
+      resolved to /study/apple-touch-icon.png — a 404. iOS reads the touch
+      icon from whatever page is open when you add to the homescreen, so a
+      relative href silently degrades the shortcut to a screenshot. No
+      kit.paths.base is configured, so the app is always served from root.
+    -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!--
+      Homescreen shortcut: launches without Safari's chrome, labelled
+      "Japanese" rather than the page's <title>.
+    -->
+    <meta name="apple-mobile-web-app-title" content="Japanese" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!--
+      Matches the status bar to the page background. Driven by the same cookie
+      as the `class` above rather than by prefers-color-scheme, because the
+      theme toggle can disagree with the OS setting — and a status bar that
+      contradicts the page is most visible in exactly the standalone mode the
+      meta above enables.
+    -->
+    <meta name="theme-color" content="%themecolor%" />
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover" class="bg-paper text-ink">

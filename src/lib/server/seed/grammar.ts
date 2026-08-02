@@ -24,7 +24,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Trying and wanting to try',
+    title: 'Trying — try doing & want to try',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -66,7 +66,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Reporting thoughts and hearsay — I think / was saying',
+    title: 'Reported thoughts — I think / they said',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -149,7 +149,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Completion and regret — end up doing',
+    title: 'Completion — end up doing',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -166,7 +166,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Giving and receiving favors',
+    title: 'Favors — giving & receiving',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -188,7 +188,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Hearsay and appearance — apparently, looks like',
+    title: 'Hearsay & appearance — apparently, looks like',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -232,7 +232,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Passive voice',
+    title: 'Passive — it was done to me',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -262,7 +262,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Listing actions — 〜たり〜たりする',
+    title: 'Listing actions — doing this & that',
     kind: 'grammar',
     dailyCap: 2,
     cards: [
@@ -274,7 +274,7 @@ export const grammarUnits: SeedUnit[] = [
     ]
   },
   {
-    title: 'Comparison — as much as, about, to the extent that',
+    title: 'Comparison — as much as, to the extent that',
     kind: 'grammar',
     dailyCap: 2,
     cards: [

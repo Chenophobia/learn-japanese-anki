@@ -27,13 +27,13 @@ const CHAPTER_SPECS: ChapterSpec[] = [
   {
     title: 'Basic Kanji',
     kind: 'kanji',
-    // "Basic" is deliberate: these four sets are a foundational subset, not
+    // "Basic" is deliberate: these four units are a foundational subset, not
     // comprehensive kanji coverage.
     unitTitles: [
-      'Kanji Set 1 — Core & most useful',
-      'Kanji Set 2 — Numbers, time & money',
-      'Kanji Set 3 — Daily-life verbs & adjectives',
-      'Kanji Set 4 — Places, directions & nature'
+      'Core & most useful',
+      'Numbers, time & money',
+      'Daily-life verbs & adjectives',
+      'Places, directions & nature'
     ]
   },
   {
@@ -68,10 +68,10 @@ const CHAPTER_SPECS: ChapterSpec[] = [
     title: 'Toward N4',
     kind: 'vocab',
     unitTitles: [
-      'N4 verbs: motion, change & giving',
-      'N4 verbs: communication & thought',
-      'N4 nouns: abstract & everyday concepts',
-      'Particles deep dive',
+      'Verbs — motion, change & giving',
+      'Verbs — communication & thought',
+      'Nouns — abstract & everyday',
+      'Particles',
       'Reading vocabulary'
     ]
   },
@@ -82,26 +82,26 @@ const CHAPTER_SPECS: ChapterSpec[] = [
       'Sequence — after doing',
       'Purpose — in order to',
       'Simultaneous actions — while doing',
-      'Listing actions — 〜たり〜たりする'
+      'Listing actions — doing this & that'
     ]
   },
   {
     title: 'Intention & Attempt',
     kind: 'grammar',
     unitTitles: [
-      'Trying and wanting to try',
+      'Trying — try doing & want to try',
       'Change of state — become able to / stop doing',
-      'Completion and regret — end up doing'
+      'Completion — end up doing'
     ]
   },
   {
     title: 'Thoughts, Guessing & Conditions',
     kind: 'grammar',
     unitTitles: [
-      'Reporting thoughts and hearsay — I think / was saying',
+      'Reported thoughts — I think / they said',
       'Speculation — might be, probably, should be',
-      'Hearsay and appearance — apparently, looks like',
-      'Comparison — as much as, about, to the extent that',
+      'Hearsay & appearance — apparently, looks like',
+      'Comparison — as much as, to the extent that',
       'Conditionals — if',
       'Contrast — even though'
     ]
@@ -110,9 +110,9 @@ const CHAPTER_SPECS: ChapterSpec[] = [
     title: 'Advanced Verb Forms',
     kind: 'grammar',
     unitTitles: [
-      'Giving and receiving favors',
+      'Favors — giving & receiving',
       'Causative — make/let someone do',
-      'Passive voice',
+      'Passive — it was done to me',
       'Ability — potential form'
     ]
   }

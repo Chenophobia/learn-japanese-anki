@@ -25,8 +25,13 @@ export const handle: Handle = async ({ event, resolve }) => {
     throw redirect(303, '/');
   }
 
+  const dark = event.locals.theme === 'dark';
   return resolve(event, {
     transformPageChunk: ({ html }) =>
-      html.replace('%theme%', event.locals.theme === 'dark' ? 'dark' : '')
+      html
+        .replace('%theme%', dark ? 'dark' : '')
+        // --color-paper for the active theme, so the status bar in a
+        // homescreen launch matches the page rather than the OS setting.
+        .replace('%themecolor%', dark ? '#14171c' : '#f6f7f8')
   });
 };
